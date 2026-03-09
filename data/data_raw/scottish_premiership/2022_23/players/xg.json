@@ -1,0 +1,22 @@
+{
+  "playerTableStats": [],
+  "paging": {
+    "currentPage": 1,
+    "totalPages": 0,
+    "resultsPerPage": 1000,
+    "totalResults": 0,
+    "firstRecordIndex": 1,
+    "lastRecordIndex": 0
+  },
+  "statColumns": [
+    "apps",
+    "subOn",
+    "minsPlayed",
+    "xG",
+    "goal",
+    "xGDiff",
+    "xGPerNinety",
+    "totalShots",
+    "xGPerShot"
+  ]
+}
