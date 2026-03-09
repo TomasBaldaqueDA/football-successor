@@ -6,7 +6,6 @@ from pathlib import Path
 # PATHS
 # -----------------------------------------
 
-# project root
 BASE_PATH = Path(__file__).resolve().parents[2]
 
 RAW_DATA_PATH = BASE_PATH / "data" / "data_raw"
@@ -28,8 +27,10 @@ def load_json(file_path):
 
 print("Setup complete.")
 
+all_players = []
+
 # -----------------------------------------
-# DISCOVER LEAGUES AND SEASONS
+# DISCOVER LEAGUES
 # -----------------------------------------
 
 league_folders = [p for p in RAW_DATA_PATH.iterdir() if p.is_dir()]
@@ -54,6 +55,10 @@ for league_path in league_folders:
             print("    No players folder found")
             continue
 
+        # -----------------------------------------
+        # LOAD JSON FILES
+        # -----------------------------------------
+
         summary_path = players_path / "summary.json"
         offensive_path = players_path / "offensive.json"
         defensive_path = players_path / "defensive.json"
@@ -67,3 +72,60 @@ for league_path in league_folders:
         xg_df = load_json(xg_path)
 
         print(f"    Players loaded: {len(summary_df)}")
+
+        # -----------------------------------------
+        # ENSURE playerId EXISTS
+        # -----------------------------------------
+
+        for df_check in [summary_df, offensive_df, defensive_df, passing_df, xg_df]:
+
+            if "playerId" not in df_check.columns:
+                if "player_id" in df_check.columns:
+                    df_check.rename(columns={"player_id": "playerId"}, inplace=True)
+
+        # -----------------------------------------
+        # MERGE DATASETS SAFELY
+        # -----------------------------------------
+
+        df = summary_df
+
+        datasets = [
+            (offensive_df, "_off"),
+            (defensive_df, "_def"),
+            (passing_df, "_pass"),
+            (xg_df, "_xg")
+        ]
+
+        for dataset, suffix in datasets:
+
+            if dataset.empty:
+                print(f"    Skipping empty dataset {suffix}")
+                continue
+
+            if "playerId" not in dataset.columns:
+                print(f"    Skipping dataset without playerId {suffix}")
+                continue
+
+            dataset = dataset.drop_duplicates(subset="playerId")
+
+            df = df.merge(dataset, on="playerId", how="left", suffixes=("", suffix))
+
+        df["league"] = league_name
+        df["season"] = season_name
+
+        print(f"    Merged players: {len(df)}")
+
+        all_players.append(df)
+
+
+print("\nBuilding global dataset...")
+
+final_df = pd.concat(all_players, ignore_index=True)
+
+print(f"Total rows: {len(final_df)}")
+
+OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+final_df.to_csv(OUTPUT_PATH, index=False)
+
+print(f"\nSaved to: {OUTPUT_PATH}")
