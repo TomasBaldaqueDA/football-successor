@@ -18,6 +18,72 @@ def to_snake_case(name: str) -> str:
     return "".join(out).replace("__", "_")
 
 
+def merge_suffix_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Merge columns that are the same metric but with suffixes such as:
+    base, base_off, base_def, base_pass, base_xg.
+
+    Preference order:
+    - base (unsuffixed)
+    - base_off
+    - base_def
+    - base_pass
+    - base_xg
+    """
+
+    suffixes = ["_off", "_def", "_pass", "_xg"]
+
+    # Map from base name to all columns belonging to that base
+    groups: dict[str, list[str]] = {}
+
+    for col in df.columns:
+        match_suffix = None
+        for s in suffixes:
+            if col.endswith(s):
+                match_suffix = s
+                break
+
+        if match_suffix is None:
+            # Unsuffixed base name; will be used if suffixed variants exist
+            base = col
+        else:
+            base = col[: -len(match_suffix)]
+
+        groups.setdefault(base, set()).add(col)
+
+    for base, cols in groups.items():
+        # Only merge when there is at least one suffixed variant in addition to base
+        if len(cols) <= 1:
+            continue
+
+        # Establish preference order
+        ordered = []
+        if base in cols:
+            ordered.append(base)
+        for s in suffixes:
+            candidate = base + s
+            if candidate in cols and candidate not in ordered:
+                ordered.append(candidate)
+
+        # If some columns were not captured by the fixed suffix list,
+        # append them at the end (stable order)
+        for c in sorted(cols):
+            if c not in ordered:
+                ordered.append(c)
+
+        # Combine using first non-null across the group
+        combined = df[ordered].bfill(axis=1).iloc[:, 0]
+
+        # Ensure base column exists and assign the merged values
+        df[base] = combined
+
+        # Drop all other variants except the base
+        drop_cols = [c for c in cols if c != base]
+        df = df.drop(columns=drop_cols)
+
+    return df
+
+
 def main() -> None:
     print("Football Successor - Player Season Cleaner")
 
@@ -58,6 +124,9 @@ def main() -> None:
 
     df = df.rename(columns=rename_map)
     df.columns = [to_snake_case(c) for c in df.columns]
+
+    # Merge duplicated metrics that only differ by suffix (off/def/pass/xg)
+    df = merge_suffix_columns(df)
 
     df["league"] = df["league"].astype("string")
     df["season"] = df["season"].astype("string")
