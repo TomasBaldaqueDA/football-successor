@@ -177,10 +177,92 @@ def main() -> None:
                 + df["season"].astype("string")
             )
 
-            df = df[
-                ["player_season_id"]
-                + [c for c in df.columns if c != "player_season_id"]
-            ]
+    # -----------------------------------------
+    # FINAL COLUMN ORDER / SELECTION
+    # -----------------------------------------
+
+    desired_order = [
+        # --- IDENTIFIERS ---
+        "player_season_id",
+        "player_id",
+        # --- PLAYER INFO ---
+        "name",
+        "first_name",
+        "last_name",
+        "age",
+        "height",
+        "weight",
+        # --- TEAM / COMPETITION CONTEXT ---
+        "team_id",
+        "team_name",
+        "team_region_name",
+        "league",
+        "season",
+        "season_id",
+        "season_name",
+        "tournament_id",
+        "tournament_name",
+        "tournament_region_code",
+        "tournament_region_id",
+        "tournament_region_name",
+        "tournament_short_name",
+        # --- POSITION ---
+        "position_text",
+        "played_positions",
+        "played_positions_short",
+        # --- PLAYING TIME ---
+        "apps",
+        "minutes_played",
+        "sub_on",
+        # --- DISCIPLINE ---
+        "yellow_card",
+        "red_card",
+        # --- PERFORMANCE: ATTACKING ---
+        "goal",
+        "assists",
+        "shots_per_game",
+        "total_shots",
+        "xg",
+        "xg_per_90",
+        "xg_diff",
+        "xg_per_shot",
+        "key_passes_per_game",
+        "dribbles_won_per_game",
+        # --- PERFORMANCE: PASSING ---
+        "pass_success",
+        "total_passes_per_game",
+        "accurate_crosses_per_game",
+        "accurate_long_passes_per_game",
+        "accurate_through_balls_per_game",
+        # --- PERFORMANCE: DEFENSIVE ---
+        "tackles_per_game",
+        "interceptions_per_game",
+        "clearances_per_game",
+        "outfielder_block_per_game",
+        "offside_won_per_game",
+        "was_dribbled_per_game",
+        "goal_own",
+        # --- PHYSICAL / DUELS ---
+        "aerial_won_per_game",
+        # --- NEGATIVE ACTIONS ---
+        "fouls_per_game",
+        "foul_given_per_game",
+        "dispossessed_per_game",
+        "turnover_per_game",
+        "offside_given_per_game",
+        # --- RATINGS / FLAGS ---
+        "rating",
+    ]
+
+    existing_cols = [c for c in desired_order if c in df.columns]
+    missing_cols = [c for c in desired_order if c not in df.columns]
+
+    if missing_cols:
+        print("Warning - missing expected columns (will be skipped):")
+        for c in missing_cols:
+            print(f"  - {c}")
+
+    df = df[existing_cols]
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUTPUT_PATH, index=False)
