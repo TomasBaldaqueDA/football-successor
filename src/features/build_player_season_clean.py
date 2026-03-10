@@ -24,39 +24,14 @@ def main() -> None:
     if not INPUT_PATH.exists():
         raise FileNotFoundError(f"Input file not found: {INPUT_PATH}")
 
-    desired_cols = [
-        # identifiers / context
-        "playerId",
-        "name",
-        "teamId",
-        "teamName",
-        "league",
-        "season",
-        "age",
-        "minsPlayed",
-        "apps",
-        # performance metrics
-        "goal",
-        "assistTotal",
-        "shotsPerGame",
-        "keyPassPerGame",
-        "dribbleWonPerGame",
-        "tacklePerGame",
-        "interceptionPerGame",
-        "clearancePerGame",
-        "passSuccess",
-        "totalPassesPerGame",
-        "accurateCrossesPerGame",
-        "accurateLongPassPerGame",
-        "accurateThroughBallPerGame",
-        "xG",
-        "xGPerNinety",
-        "xGDiff",
-        "totalShots",
-    ]
+    # Read full dataset (keep all columns)
+    df = pd.read_csv(INPUT_PATH, low_memory=False)
 
-    # Read only what we need (avoids mixed-type warnings from other columns)
-    df = pd.read_csv(INPUT_PATH, usecols=desired_cols, low_memory=False)
+    # Remove goalkeepers based on positionText
+    if "positionText" in df.columns:
+        df = df[df["positionText"] != "Goalkeeper"].copy()
+    elif "position_text" in df.columns:
+        df = df[df["position_text"] != "Goalkeeper"].copy()
 
     rename_map = {
         "playerId": "player_id",
@@ -89,7 +64,8 @@ def main() -> None:
 
     id_cols = ["player_id", "team_id"]
     for c in id_cols:
-        df[c] = pd.to_numeric(df[c], errors="coerce").astype("Int64")
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").astype("Int64")
 
     metric_cols = [
         "age",
@@ -114,24 +90,28 @@ def main() -> None:
         "total_shots",
     ]
     for c in metric_cols:
-        df[c] = pd.to_numeric(df[c], errors="coerce")
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
 
-    df = df.dropna(subset=["player_id", "league", "season"])
+    # Ensure keys exist before using them for de-duplication / IDs
+    key_subset = [c for c in ["player_id", "league", "season"] if c in df.columns]
+    if key_subset:
+        df = df.dropna(subset=key_subset)
+        df = df.drop_duplicates(subset=key_subset, keep="first")
 
-    df = df.drop_duplicates(subset=["player_id", "league", "season"], keep="first")
+        if "player_id" in df.columns:
+            df["player_season_id"] = (
+                df["player_id"].astype("Int64").astype("string")
+                + "_"
+                + df["league"].astype("string")
+                + "_"
+                + df["season"].astype("string")
+            )
 
-    df["player_season_id"] = (
-        df["player_id"].astype("Int64").astype("string")
-        + "_"
-        + df["league"].astype("string")
-        + "_"
-        + df["season"].astype("string")
-    )
-
-    df = df[
-        ["player_season_id"]
-        + [c for c in df.columns if c != "player_season_id"]
-    ]
+            df = df[
+                ["player_season_id"]
+                + [c for c in df.columns if c != "player_season_id"]
+            ]
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUTPUT_PATH, index=False)
