@@ -1,0 +1,26 @@
+# Segredos na raiz (scripts / tooling)
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Claude (local)
+.claude/settings.local.json
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
+
+# web/ — ver web/.gitignore (node_modules, .next, .env*, etc.)
