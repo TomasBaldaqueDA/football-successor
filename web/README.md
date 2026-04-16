@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is the **Next.js** front-end for **Football Successor**. For the full monorepo overview, setup, and CV-oriented description, see the **[root README](../README.md)**.
 
 ## Getting Started
 
