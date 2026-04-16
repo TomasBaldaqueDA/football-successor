@@ -1,9 +1,12 @@
-# Screenshots para o README
+# Screenshots (README)
 
-Coloca aqui as capturas de ecrã (PNG ou WebP) e referencia-as no `README.md` na raiz do repositório, por exemplo:
+Ficheiros usados no `README.md` da raiz:
 
-```markdown
-![Football Successor — página inicial](docs/screenshots/home.png)
-```
+| Ficheiro | Uso |
+|----------|-----|
+| `Overview.png` | Entrada / navegação nos studios |
+| `Player_search.png` | Pesquisa e seleção de jogadores |
+| `Comparisons.png` | Studios / comparações e métricas |
+| `Scouting.png` | Módulo de scouting |
 
-Nomes sugeridos: `home.png`, `studio-l4l.png`, `studio-big5-ranking.png`, etc.
+Para substituir: mantém os nomes ou atualiza as referências em `/README.md`.

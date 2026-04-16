@@ -4,6 +4,18 @@
 
 > PT: Ferramenta para explorar perfis de jogadores, substitutos “like-for-like”, rankings por liga/métrica e conteúdo de scouting, sobre dados agregados na base de dados.
 
+## Screenshots
+
+Visão geral da app, pesquisa de jogadores, fluxos de comparação / studios e módulo de scouting.
+
+| Overview — entrada e navegação nos studios | Player search — pesquisa e seleção |
+|:---:|:---:|
+| ![Overview — Football Successor](docs/screenshots/Overview.png) | ![Player search](docs/screenshots/Player_search.png) |
+
+| Comparisons — studios / métricas | Scouting — exploração e gráficos |
+|:---:|:---:|
+| ![Comparisons](docs/screenshots/Comparisons.png) | ![Scouting](docs/screenshots/Scouting.png) |
+
 ---
 
 ## Why this repo exists
@@ -16,7 +28,7 @@ This project bundles:
 - **`scripts/`** — Python utilities (e.g. exports, charts).
 - **`data_raw/`** — raw league / season JSON (large; cloned with the repo).
 
-It is suitable to **link from a CV**: reviewers can browse code, structure, and commit history. Add screenshots under [`docs/screenshots/`](docs/screenshots/) to show the UI (see section below).
+It is suitable to **link from a CV**: reviewers can browse code, structure, commit history, and the **screenshots** at the top of this README.
 
 ---
 
@@ -97,19 +109,6 @@ npm run lint
 - **League strength** — season metrics can be scaled with `league_strength_coefficient` and normalised to a **0–1** cohort score for transparent ranking.
 - **Scouting module** — CSV-driven exploration with filters and charts where implemented.
 - **SQL transparency** — mart definitions live in `sql/` for reproducible analytics engineering.
-
----
-
-## Screenshots (recommended for your CV)
-
-Add PNG/WebP files under **`docs/screenshots/`**, then uncomment or add lines like:
-
-```markdown
-![Home — Football Successor](docs/screenshots/home.png)
-![Studio — example](docs/screenshots/studio-example.png)
-```
-
-If you **send images** (or drop files into that folder), wire them in the same way — GitHub renders them on the repo homepage.
 
 ---
 
