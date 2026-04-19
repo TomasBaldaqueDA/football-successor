@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { setLastStudio } from "@/lib/studioNav";
 import {
@@ -8,6 +7,31 @@ import {
   saveDevelopmentStudioSnapshot,
   type StoredDevelopmentRow,
 } from "@/lib/developmentStudioStorage";
+import {
+  StudioPage,
+  StudioInner,
+  StudioHeader,
+  Card,
+  SectionLabel,
+  ErrorBanner,
+  WarnBanner,
+  SearchInput,
+  SearchDropdown,
+  SelectedBadge,
+  FieldLabel,
+  Select,
+  Input,
+  Button,
+  DataTable,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+  MetricCard,
+  StatRow,
+  PlayerLink,
+} from "@/components/ui/studio";
 
 type PlayerHit = { player_id: string; player_name: string; last_club: string | null };
 
@@ -223,11 +247,11 @@ export function DevelopmentStudio() {
     const maxAgeN = Number(maxAge);
     const cbMaxAgeN = Number(cbMaxAge);
     if (![minAgeN, maxAgeN, cbMaxAgeN].every((n) => Number.isFinite(n))) {
-      setError("Parâmetros inválidos (idade).");
+      setError("Invalid parameters (age).");
       return;
     }
     if (minAgeN > maxAgeN) {
-      setError("A idade mínima não pode ser maior que a máxima.");
+      setError("Minimum age cannot be greater than maximum.");
       return;
     }
     setLoadingDevelopment(true);
@@ -263,247 +287,238 @@ export function DevelopmentStudio() {
   }, [target, bucket, topN, weightVersion, minAge, maxAge, cbMaxAge]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-10">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Studio · Development</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Substitutos (potencial + curva)
-        </h1>
-        <p className="max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Ranking upside-first: <span className="font-medium">fit 30%</span>,{" "}
-          <span className="font-medium">upside 45%</span>,{" "}
-          <span className="font-medium">trajectory 15%</span> e{" "}
-          <span className="font-medium">readiness 10%</span>.
-        </p>
-      </header>
+    <StudioPage>
+      <StudioInner>
+        {/* Header */}
+        <StudioHeader
+          section="Studio · Development"
+          title="Development & Projection"
+          description="Find players with the highest growth potential in the target's role."
+        />
 
-      {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-          {error}
-        </div>
-      ) : null}
+        {/* Error */}
+        {error && <ErrorBanner message={error} />}
 
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">1. Jogador alvo</h2>
-        <div className="relative">
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Pesquisar por nome (mín. 2 caracteres)…"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            autoComplete="off"
-          />
-          {searching ? <span className="absolute right-3 top-2.5 text-xs text-zinc-400">A pesquisar…</span> : null}
-          {hits.length > 0 ? (
-            <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-              {hits.map((p) => (
-                <li key={p.player_id}>
-                  <button
-                    type="button"
-                    className="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    onClick={() => void selectPlayer(p)}
-                  >
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">{p.player_name}</span>
-                    {p.last_club ? <span className="text-xs text-zinc-500 dark:text-zinc-400">{p.last_club}</span> : null}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">2. Configuração</h2>
-        {loadingBuckets ? (
-          <p className="text-sm text-zinc-500">A carregar buckets…</p>
-        ) : (
-          <div className="flex flex-wrap items-end gap-4">
-            <label className="flex min-w-[12rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Bucket
-              <select
-                value={bucket}
-                onChange={(e) => setBucket(e.target.value)}
-                disabled={!target || buckets.length === 0}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              >
-                {buckets.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex w-24 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Top N
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={topN}
-                onChange={(e) => setTopN(Number(e.target.value))}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-            <label className="flex w-[4.5rem] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Idade mín
-              <input
-                type="number"
-                min={10}
-                max={30}
-                value={minAge}
-                onChange={(e) => setMinAge(e.target.value)}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-            <label className="flex w-[4.5rem] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Idade máx
-              <input
-                type="number"
-                min={10}
-                max={30}
-                value={maxAge}
-                onChange={(e) => setMaxAge(e.target.value)}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-            <label className="flex w-[4.5rem] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              CB máx
-              <input
-                type="number"
-                min={10}
-                max={35}
-                value={cbMaxAge}
-                onChange={(e) => setCbMaxAge(e.target.value)}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-            <label className="flex min-w-[10rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Versão pesos
-              <input
-                type="text"
-                value={weightVersion}
-                onChange={(e) => setWeightVersion(e.target.value)}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => void runDevelopment()}
-              disabled={!target || !bucket || loadingDevelopment}
-              className="h-[42px] rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-            >
-              {loadingDevelopment ? "A calcular…" : "Calcular Development"}
-            </button>
+        {/* Step 1 — Target player */}
+        <Card>
+          <SectionLabel step={1}>Target player</SectionLabel>
+          <div className="relative">
+            <SearchInput
+              value={q}
+              onChange={setQ}
+              placeholder="Search by name (min. 2 chars)…"
+              loading={searching}
+            />
+            <SearchDropdown hits={hits} onSelect={(p) => void selectPlayer(p)} />
           </div>
-        )}
-      </section>
-
-      {targetSummary ? (
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Alvo · resumo</h2>
-          <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-            <span>
-              <span className="text-zinc-500">Clube</span> <span className="font-medium">{targetSummary.last_club ?? "—"}</span>
-            </span>
-            <span>
-              <span className="text-zinc-500">Idade</span> <span className="font-medium">{targetSummary.age_last_season ?? "—"}</span>
-            </span>
-            <span>
-              <span className="text-zinc-500">VM</span>{" "}
-              <span className="font-medium">
-                {fmtMarketValue(targetSummary.market_value_eur ?? null, targetSummary.market_value_text ?? null)}
-              </span>
-            </span>
-          </div>
-          {comparisonMetrics.length > 0 ? (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {comparisonMetrics.map((m) => (
-                <div
-                  key={m.column}
-                  className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/50"
-                >
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    {m.label} <span className="font-normal text-zinc-400">({fmtWeight(m.weight)})</span>
-                  </p>
-                  <p className="mt-0.5 text-lg tabular-nums font-semibold text-zinc-900 dark:text-zinc-50">{fmtNum(m.target, 3)}</p>
-                </div>
-              ))}
+          {target && (
+            <div className="mt-3">
+              <SelectedBadge name={target.player_name} id={target.player_id} />
             </div>
-          ) : null}
-        </section>
-      ) : null}
+          )}
+        </Card>
 
-      {rows.length > 0 ? (
-        <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Resultados · Development</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[72rem] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                <tr>
-                  <th className="px-3 py-3">#</th>
-                  <th className="px-3 py-3">Jogador</th>
-                  <th className="px-3 py-3">Clube</th>
-                  <th className="px-3 py-3">VM</th>
-                  <th className="px-3 py-3">Idade</th>
-                  <th className="px-3 py-3">Pos. short</th>
-                  <th className="px-3 py-3">Min</th>
-                  <th className="px-3 py-3">Dev score</th>
-                  <th className="px-3 py-3">Fit</th>
-                  <th className="px-3 py-3">Upside</th>
-                  <th className="px-3 py-3">Traj</th>
-                  <th className="px-3 py-3">Ready</th>
-                  <th className="px-3 py-3">Bucket</th>
-                  {comparisonMetrics.map((m) => (
-                    <th key={m.column} className="min-w-[6rem] px-2 py-3 normal-case">
-                      <div className="leading-tight">
-                        <span className="font-semibold text-zinc-700 dark:text-zinc-200">{m.label}</span>
-                        <div className="mt-1 text-[10px] font-normal normal-case text-zinc-400">alvo {fmtNum(m.target, 3)}</div>
-                      </div>
-                    </th>
+        {/* Step 2 — Config */}
+        <Card>
+          <SectionLabel step={2}>Configuration</SectionLabel>
+          {loadingBuckets ? (
+            <p className="text-sm" style={{ color: "#8B949E" }}>Loading buckets…</p>
+          ) : (
+            <div className="flex flex-wrap items-end gap-4">
+              <FieldLabel label="Bucket">
+                <Select
+                  value={bucket}
+                  onChange={setBucket}
+                  disabled={!target || buckets.length === 0}
+                >
+                  {buckets.map((b) => (
+                    <option key={b} value={b}>{b}</option>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {rows.map((r) => (
-                  <tr key={String(r.player_id)}>
-                    <td className="px-3 py-2.5 tabular-nums text-zinc-500">{String(r.development_rank)}</td>
-                    <td className="px-3 py-2.5 font-medium">
-                      <Link
-                        href={`/studio/players/${encodeURIComponent(String(r.player_id))}`}
-                        onPointerDown={flushSnapshotToStorage}
-                        className="text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-600 dark:text-zinc-100 dark:decoration-zinc-600 dark:hover:decoration-zinc-400"
-                      >
-                        {r.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2.5 text-xs">{r.last_club ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs">{fmtMarketValue(r.market_value_eur ?? null, r.market_value_text ?? null)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{r.age_last_season ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs">{r.played_positions_short?.trim() || "—"}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{fmtNum(r.minutes_played, 0)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums font-semibold">{fmtNum(r.development_score)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{fmtNum(r.fit_now_score)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{fmtNum(r.upside_score)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{fmtNum(r.trajectory_score)}</td>
-                    <td className="px-3 py-2.5 text-xs tabular-nums">{fmtNum(r.readiness_score)}</td>
-                    <td className="px-3 py-2.5 text-xs">{r.readiness_bucket}</td>
-                    {comparisonMetrics.map((m) => (
-                      <td key={m.column} className="px-2 py-2.5 text-xs tabular-nums">
-                        {fmtNum(r.metric_vals?.[m.column], 3)}
-                      </td>
-                    ))}
-                  </tr>
+                </Select>
+              </FieldLabel>
+
+              <FieldLabel label="Top N">
+                <Input
+                  type="number"
+                  value={topN}
+                  onChange={(v) => setTopN(Number(v))}
+                  min={1}
+                  max={100}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Min age">
+                <Input
+                  type="number"
+                  value={minAge}
+                  onChange={setMinAge}
+                  min={10}
+                  max={30}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Max age">
+                <Input
+                  type="number"
+                  value={maxAge}
+                  onChange={setMaxAge}
+                  min={10}
+                  max={30}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="CB máx">
+                <Input
+                  type="number"
+                  value={cbMaxAge}
+                  onChange={setCbMaxAge}
+                  min={10}
+                  max={35}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Weight version">
+                <Input
+                  type="text"
+                  value={weightVersion}
+                  onChange={setWeightVersion}
+                />
+              </FieldLabel>
+
+              <Button
+                onClick={() => void runDevelopment()}
+                disabled={!target || !bucket || loadingDevelopment}
+              >
+                {loadingDevelopment ? "Calculating…" : "Calculate Development"}
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* Warn when no results after run */}
+        {!loadingDevelopment && rows.length === 0 && target && bucket && (
+          <WarnBanner>No results found. Try adjusting the age filters or bucket.</WarnBanner>
+        )}
+
+        {/* Target summary */}
+        {targetSummary && (
+          <Card>
+            <SectionLabel>Target · summary</SectionLabel>
+            <StatRow
+              items={[
+                { label: "Player", value: targetSummary.player_name ?? "—" },
+                { label: "Club", value: targetSummary.last_club ?? "—" },
+                { label: "Age", value: String(targetSummary.age_last_season ?? "—") },
+                { label: "MV", value: fmtMarketValue(targetSummary.market_value_eur ?? null, targetSummary.market_value_text ?? null) },
+              ]}
+            />
+            {comparisonMetrics.length > 0 && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {comparisonMetrics.map((m) => (
+                  <MetricCard
+                    key={m.column}
+                    label={`${m.label} (${fmtWeight(m.weight)})`}
+                    value={fmtNum(m.target, 3)}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
-    </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Results table */}
+        {rows.length > 0 && (
+          <Card noPad>
+            <div
+              className="flex items-center justify-between border-b px-5 py-3"
+              style={{ borderColor: "rgba(255,255,255,0.08)" }}
+            >
+              <SectionLabel>Results · Development</SectionLabel>
+            </div>
+            <DataTable>
+              <THead>
+                <TH>#</TH>
+                <TH>Player</TH>
+                <TH>MV</TH>
+                <TH>Club</TH>
+                <TH>Age</TH>
+                <TH>Pos.</TH>
+                <TH>Dev Score</TH>
+                <TH>Fit Now</TH>
+                <TH>Upside</TH>
+                <TH>Trajectory</TH>
+                <TH>Readiness</TH>
+                <TH>Dev Gap</TH>
+                <TH>Minutes</TH>
+                {comparisonMetrics.map((m) => (
+                  <TH key={m.column} className="min-w-[6rem] normal-case">
+                    <div className="leading-tight">
+                      <span>{m.label}</span>
+                      <div className="mt-0.5 text-[10px] font-normal normal-case" style={{ color: "#8B949E" }}>
+                        target {fmtNum(m.target, 3)}
+                      </div>
+                    </div>
+                  </TH>
+                ))}
+              </THead>
+              <TBody>
+                {rows.map((r) => (
+                  <TR key={String(r.player_id)}>
+                    <TD className="tabular-nums text-xs" style={{ color: "#8B949E" }}>
+                      {String(r.development_rank)}
+                    </TD>
+                    <TD>
+                      <PlayerLink
+                        href={`/studio/players/${encodeURIComponent(String(r.player_id))}`}
+                        name={r.player_name}
+                        onPointerDown={flushSnapshotToStorage}
+                      />
+                    </TD>
+                    <TD className="text-xs">{fmtMarketValue(r.market_value_eur ?? null, r.market_value_text ?? null)}</TD>
+                    <TD className="text-xs">{r.last_club ?? "—"}</TD>
+                    <TD className="text-xs tabular-nums">{r.age_last_season ?? "—"}</TD>
+                    <TD className="text-xs">
+                      {r.played_positions_short?.trim()
+                        ? r.played_positions_short.trim().split(",").map((pos) => (
+                            <span
+                              key={pos}
+                              className="mr-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium"
+                              style={{ background: "rgba(0,201,167,0.12)", color: "#00C9A7" }}
+                            >
+                              {pos.trim()}
+                            </span>
+                          ))
+                        : "—"}
+                    </TD>
+                    <TD className="text-xs tabular-nums font-semibold">{fmtNum(r.development_score)}</TD>
+                    <TD className="text-xs tabular-nums">{fmtNum(r.fit_now_score)}</TD>
+                    <TD className="text-xs tabular-nums">{fmtNum(r.upside_score)}</TD>
+                    <TD className="text-xs tabular-nums">{fmtNum(r.trajectory_score)}</TD>
+                    <TD className="text-xs tabular-nums">
+                      <span className="mr-1.5">{fmtNum(r.readiness_score)}</span>
+                      {r.readiness_bucket && (
+                        <span
+                          className="inline-block rounded px-1.5 py-0.5 text-[10px] font-medium"
+                          style={{ background: "rgba(255,213,79,0.12)", color: "#FFD54F" }}
+                        >
+                          {r.readiness_bucket}
+                        </span>
+                      )}
+                    </TD>
+                    <TD className="text-xs tabular-nums">{fmtNum(r.development_gap_to_target)}</TD>
+                    <TD className="text-xs tabular-nums">{fmtNum(r.minutes_played, 0)}</TD>
+                    {comparisonMetrics.map((m) => (
+                      <TD key={m.column} className="text-xs tabular-nums">
+                        {fmtNum(r.metric_vals?.[m.column], 3)}
+                      </TD>
+                    ))}
+                  </TR>
+                ))}
+              </TBody>
+            </DataTable>
+          </Card>
+        )}
+      </StudioInner>
+    </StudioPage>
   );
 }
-

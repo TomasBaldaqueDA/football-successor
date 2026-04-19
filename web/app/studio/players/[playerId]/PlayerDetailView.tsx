@@ -35,7 +35,7 @@ function DefinitionList({
 
 export function PlayerDetailView({ data }: { data: PlayerDetailData }) {
   const title =
-    (data.dim?.player_name as string | undefined) ?? `Jogador ${data.playerId}`;
+    (data.dim?.player_name as string | undefined) ?? `Player ${data.playerId}`;
 
   const [studio, setStudio] = useState<Studio>("l4l");
   useEffect(() => {
@@ -65,26 +65,26 @@ export function PlayerDetailView({ data }: { data: PlayerDetailData }) {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{title}</h1>
         <p className="font-mono text-sm text-zinc-500">player_id · {data.playerId}</p>
         <p className="max-w-2xl pt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Valores <span className="font-medium">p90 / per 90</span> vêm do perfil fundido (
+          <span className="font-medium">p90 / per 90</span> values come from the merged profile (
           <code className="text-xs">*_p90_merged</code>, <code className="text-xs">*_per_90_merged</code>) —
-          média ponderada temporal das taxas brutas,{" "}
-          <span className="font-medium">sem</span> percentis nem ajuste de liga.
+          time-weighted average of raw rates,{" "}
+          <span className="font-medium">without</span> percentiles or league adjustment.
         </p>
       </header>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Identidade & contexto (<code className="text-xs font-normal">mart.player_dim</code>)
+          Identity & context (<code className="text-xs font-normal">mart.player_dim</code>)
         </h2>
-        <DefinitionList items={dimItems} empty="Sem linha em player_dim." />
+        <DefinitionList items={dimItems} empty="No row in player_dim." />
       </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Metadados do agregado (<code className="text-xs font-normal">player_profile_merged_v1</code>)
+          Aggregated metadata (<code className="text-xs font-normal">player_profile_merged_v1</code>)
         </h2>
         {data.meta.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nenhum campo meta neste perfil.</p>
+          <p className="text-sm text-zinc-500">No meta fields in this profile.</p>
         ) : (
           <DefinitionList
             items={data.meta.map((m) => ({
@@ -97,14 +97,14 @@ export function PlayerDetailView({ data }: { data: PlayerDetailData }) {
 
       <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div className="border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Estatísticas · p90 bruto fundido</h2>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Stats · raw merged p90</h2>
           <p className="mt-1 text-xs text-zinc-500">
-            Uma linha por métrica; valores são taxas por 90 após fusão temporal (minutos × recência).
+            One row per metric; values are per-90 rates after temporal merging (minutes × recency).
           </p>
         </div>
         <div className="max-h-[70vh] overflow-auto">
           {data.p90Stats.length === 0 ? (
-            <p className="p-5 text-sm text-zinc-500">Sem colunas *_p90_merged / *_per_90_merged neste registo.</p>
+            <p className="p-5 text-sm text-zinc-500">No *_p90_merged / *_per_90_merged columns in this record.</p>
           ) : (
             <table className="w-full text-left text-sm">
               <thead className="sticky top-0 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">

@@ -1,6 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  StudioPage, StudioInner, StudioHeader,
+  Card, CardHeader, CardTitle,
+  SectionLabel, ErrorBanner,
+  SearchInput, SearchDropdown, SelectedBadge,
+  FieldLabel, Select, Button,
+  ScoreCard,
+  DataTable, THead, TH, TBody, TR, TD, ScoreBadge,
+  StatRow, Spinner,
+  C,
+} from "@/components/ui/studio";
 
 type PlayerHit = { player_id: string; player_name: string; last_club: string | null };
 
@@ -41,6 +52,22 @@ function fmtPct(v: number | string | null | undefined): string {
   return Number.isFinite(n) ? `${n.toFixed(1)}%` : "—";
 }
 
+const SCORE_COLORS: Record<"defend" | "support" | "create" | "score", string> = {
+  defend:  "#4FC3F7",
+  support: "#81D4FA",
+  create:  "#A78BFA",
+  score:   "#FF7043",
+};
+
+function scoreColor(v: number | null | undefined): string {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return C.muted;
+  if (n >= 75) return "#00C9A7";
+  if (n >= 50) return "#FFD54F";
+  if (n >= 25) return "#FFAB40";
+  return "#FF6B6B";
+}
+
 export function ControlScoreStudio() {
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<PlayerHit[]>([]);
@@ -61,14 +88,8 @@ export function ControlScoreStudio() {
       setHits([]);
       return;
     }
-    if (target && tn && qn === tn) {
-      setHits([]);
-      return;
-    }
-    if (qn.length < 2) {
-      setHits([]);
-      return;
-    }
+    if (target && tn && qn === tn) { setHits([]); return; }
+    if (qn.length < 2) { setHits([]); return; }
     const t = setTimeout(async () => {
       try {
         const res = await fetch(`/api/players/search?q=${encodeURIComponent(qn)}`);
@@ -99,9 +120,7 @@ export function ControlScoreStudio() {
       const res = await fetch("/api/control-score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          player_id: target.player_id,
-        }),
+        body: JSON.stringify({ player_id: target.player_id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Control Score failed");
@@ -130,156 +149,136 @@ export function ControlScoreStudio() {
   }, [topScoreType]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-4 py-10">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Studio · Control Score</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Control Score Card</h1>
-      </header>
+    <StudioPage>
+      <StudioInner>
+        <StudioHeader
+          section="Control Score"
+          title="Control Score Card"
+          description="Perfil de jogador nas dimensões Defend · Support · Create · Score."
+        />
 
-      {error ? <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div> : null}
+        {error && <ErrorBanner message={error} />}
 
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-zinc-900">1. Jogador alvo</h2>
-        <div className="relative">
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Pesquisar por nome..."
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
-          />
-          {hits.length > 0 ? (
-            <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-lg">
-              {hits.map((p) => (
-                <li key={p.player_id}>
-                  <button
-                    type="button"
-                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-zinc-100"
-                    onClick={() => void selectPlayer(p)}
-                  >
-                    <span className="font-medium">{p.player_name}</span>
-                    {p.last_club ? <span className="text-xs text-zinc-500">{p.last_club}</span> : null}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-zinc-900">2. Ver card</h2>
-        <button type="button" onClick={() => void runControl()} disabled={!target || loading} className="h-[42px] rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white disabled:opacity-50">
-          {loading ? "A carregar..." : "Carregar Control Card"}
-        </button>
-      </section>
-
-      {row ? (
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-900">Resumo</h2>
-          <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-zinc-700">
-            <span><span className="text-zinc-500">Nome</span> <span className="font-medium">{row.name ?? "—"}</span></span>
-            <span><span className="text-zinc-500">Idade</span> <span className="font-medium">{row.age ?? "—"}</span></span>
-            <span><span className="text-zinc-500">Market Value</span> <span className="font-medium">{row.market_value ?? "—"}</span></span>
-            <span><span className="text-zinc-500">Positions</span> <span className="font-medium">{row.positions ?? "—"}</span></span>
-            <span><span className="text-zinc-500">Nationality</span> <span className="font-medium">{row.nationality ?? "—"}</span></span>
-            <span><span className="text-zinc-500">Team</span> <span className="font-medium">{row.team ?? "—"}</span></span>
-            <span><span className="text-zinc-500">League</span> <span className="font-medium">{row.league ?? "—"}</span></span>
+        {/* Step 1 – Player search */}
+        <Card>
+          <SectionLabel step={1}>Target player</SectionLabel>
+          <div className="relative">
+            <SearchInput
+              value={q}
+              onChange={setQ}
+              placeholder="Search by name…"
+              loading={hits.length === 0 && q.length >= 2 && !target}
+            />
+            <SearchDropdown hits={hits} onSelect={(p) => void selectPlayer(p)} />
           </div>
-        </section>
-      ) : null}
+          {target && (
+            <div className="mt-3">
+              <SelectedBadge name={target.player_name} id={target.player_id} />
+            </div>
+          )}
+        </Card>
 
-      {row ? (
-        <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <div className="border-b border-zinc-200 px-5 py-3">
-            <h2 className="text-sm font-semibold text-zinc-900">Card de perfis</h2>
-          </div>
-          <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-              <div className="text-xs text-emerald-700">Defend Score</div>
-              <div className="text-3xl font-bold text-emerald-900">{fmtNum(row.defend_score, 1)}</div>
-            </div>
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <div className="text-xs text-blue-700">Support Score</div>
-              <div className="text-3xl font-bold text-blue-900">{fmtNum(row.support_score, 1)}</div>
-            </div>
-            <div className="rounded-lg border border-violet-200 bg-violet-50 p-3">
-              <div className="text-xs text-violet-700">Create Score</div>
-              <div className="text-3xl font-bold text-violet-900">{fmtNum(row.create_score, 1)}</div>
-            </div>
-            <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-3">
-              <div className="text-xs text-fuchsia-700">Score Score</div>
-              <div className="text-3xl font-bold text-fuchsia-900">{fmtNum(row.score_score, 1)}</div>
-            </div>
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-              <div className="text-xs text-zinc-700">Possession Lost Score</div>
-              <div className="text-3xl font-bold text-zinc-900">{fmtPct(row.possession_lost_score)}</div>
-            </div>
-          </div>
-        </section>
-      ) : null}
+        {/* Step 2 – Load card */}
+        <Card>
+          <SectionLabel step={2}>Ver card</SectionLabel>
+          <Button onClick={() => void runControl()} disabled={!target || loading}>
+            {loading ? <span className="flex items-center gap-2"><Spinner /> Loading…</span> : "Load Control Card"}
+          </Button>
+        </Card>
 
-      <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <div className="border-b border-zinc-200 px-5 py-3">
-          <h2 className="text-sm font-semibold text-zinc-900">Top 50 por score (v2)</h2>
-        </div>
-        <div className="flex flex-wrap items-end gap-3 px-5 py-4">
-          <label className="flex w-40 flex-col gap-1 text-xs font-medium text-zinc-600">
-            Score
-            <select
-              value={topScoreType}
-              onChange={(e) => setTopScoreType(e.target.value as "defend" | "support" | "create" | "score")}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm"
-            >
-              <option value="defend">Defend</option>
-              <option value="support">Support</option>
-              <option value="create">Create</option>
-              <option value="score">Score</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => void runTop50()}
-            disabled={topLoading}
-            className="h-[42px] rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {topLoading ? "A carregar..." : "Carregar Top 50"}
-          </button>
-        </div>
-        {topRows.length > 0 ? (
-          <div className="overflow-x-auto border-t border-zinc-200">
-            <table className="w-full min-w-[68rem] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                <tr>
-                  <th className="px-3 py-3">#</th>
-                  <th className="px-3 py-3">Jogador</th>
-                  <th className="px-3 py-3">Idade</th>
-                  <th className="px-3 py-3">Posições</th>
-                  <th className="px-3 py-3">Team</th>
-                  <th className="px-3 py-3">League</th>
-                  <th className="px-3 py-3">Market Value</th>
-                  <th className="px-3 py-3">Score</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {topRows.map((r, i) => (
-                  <tr key={`${r.player_id}-${i}`}>
-                    <td className="px-3 py-2.5">{i + 1}</td>
-                    <td className="px-3 py-2.5 font-medium">{r.name ?? "—"}</td>
-                    <td className="px-3 py-2.5 tabular-nums">{r.age ?? "—"}</td>
-                    <td className="px-3 py-2.5">{r.positions ?? "—"}</td>
-                    <td className="px-3 py-2.5">{r.team ?? "—"}</td>
-                    <td className="px-3 py-2.5">{r.league ?? "—"}</td>
-                    <td className="px-3 py-2.5">{r.market_value ?? "—"}</td>
-                    <td className="px-3 py-2.5 tabular-nums font-semibold">{fmtNum(r.score_value, 2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Player summary */}
+        {row && (
+          <Card>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold" style={{ color: C.text }}>Summary</h2>
+            </div>
+            <StatRow items={[
+              { label: "Name",          value: row.name        ?? "—" },
+              { label: "Age",           value: String(row.age  ?? "—") },
+              { label: "Market Value",  value: row.market_value ?? "—" },
+              { label: "Positions",     value: row.positions   ?? "—" },
+              { label: "Club",          value: row.team        ?? "—" },
+              { label: "League",        value: row.league      ?? "—" },
+              { label: "Nat.",          value: row.nationality ?? "—" },
+            ]} />
+          </Card>
+        )}
+
+        {/* Score cards */}
+        {row && (
+          <Card noPad>
+            <CardHeader>
+              <CardTitle>Profile Cards</CardTitle>
+            </CardHeader>
+            <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-5">
+              <ScoreCard label="Defend Score"          value={fmtNum(row.defend_score, 1)}          color="#4FC3F7" />
+              <ScoreCard label="Support Score"         value={fmtNum(row.support_score, 1)}         color="#81D4FA" />
+              <ScoreCard label="Create Score"          value={fmtNum(row.create_score, 1)}          color="#A78BFA" />
+              <ScoreCard label="Score Score"           value={fmtNum(row.score_score, 1)}           color="#FF7043" />
+              <ScoreCard label="Possession Lost Score" value={fmtPct(row.possession_lost_score)}    color="#FFD54F" />
+            </div>
+          </Card>
+        )}
+
+        {/* Top 50 */}
+        <Card noPad>
+          <CardHeader>
+            <CardTitle>Top 50 by score</CardTitle>
+          </CardHeader>
+          <div className="flex flex-wrap items-end gap-3 px-5 py-4">
+            <FieldLabel label="Score">
+              <Select
+                value={topScoreType}
+                onChange={(v) => setTopScoreType(v as "defend" | "support" | "create" | "score")}
+              >
+                <option value="defend">Defend</option>
+                <option value="support">Support</option>
+                <option value="create">Create</option>
+                <option value="score">Score</option>
+              </Select>
+            </FieldLabel>
+            <Button onClick={() => void runTop50()} disabled={topLoading}>
+              {topLoading ? <span className="flex items-center gap-2"><Spinner /> Loading…</span> : "Load Top 50"}
+            </Button>
           </div>
-        ) : null}
-      </section>
-    </div>
+
+          {topRows.length > 0 && (
+            <div className="border-t" style={{ borderColor: C.border }}>
+              <DataTable>
+                <THead>
+                  <TH>#</TH>
+                  <TH>Player</TH>
+                  <TH>Age</TH>
+                  <TH>Positions</TH>
+                  <TH>Club</TH>
+                  <TH>League</TH>
+                  <TH>Market Value</TH>
+                  <TH>Score</TH>
+                </THead>
+                <TBody>
+                  {topRows.map((r, i) => (
+                    <TR key={`${r.player_id}-${i}`}>
+                      <TD><span style={{ color: C.muted }}>{i + 1}</span></TD>
+                      <TD><span className="font-medium" style={{ color: C.text }}>{r.name ?? "—"}</span></TD>
+                      <TD><span className="tabular-nums" style={{ color: C.muted }}>{r.age ?? "—"}</span></TD>
+                      <TD><span style={{ color: C.muted }}>{r.positions ?? "—"}</span></TD>
+                      <TD><span style={{ color: C.text }}>{r.team ?? "—"}</span></TD>
+                      <TD><span style={{ color: C.muted }}>{r.league ?? "—"}</span></TD>
+                      <TD><span style={{ color: C.muted }}>{r.market_value ?? "—"}</span></TD>
+                      <TD>
+                        <ScoreBadge
+                          value={fmtNum(r.score_value, 2)}
+                          color={SCORE_COLORS[topScoreType]}
+                        />
+                      </TD>
+                    </TR>
+                  ))}
+                </TBody>
+              </DataTable>
+            </div>
+          )}
+        </Card>
+      </StudioInner>
+    </StudioPage>
   );
 }
-

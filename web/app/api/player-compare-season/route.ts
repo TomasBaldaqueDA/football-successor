@@ -112,22 +112,22 @@ export async function POST(req: NextRequest) {
     for (const id of playerIds) {
       const j = poolById.get(id);
       if (!j) {
-        errors.push(`${id}: sem linha na época ${seasonSlug} em player_pool_clean_tbl`);
+        errors.push(`${id}: no row for season ${seasonSlug} in player_pool_clean_tbl`);
         continue;
       }
       if (!memOk.has(id)) {
-        errors.push(`${id}: sem membership no bucket «${selectedBucket}»`);
+        errors.push(`${id}: no membership in bucket «${selectedBucket}»`);
         continue;
       }
       const minutes = poolMinutes(j);
       if (minutes < 900) {
-        errors.push(`${id}: só ${Math.round(minutes)} min na época (mínimo 900)`);
+        errors.push(`${id}: only ${Math.round(minutes)} min in the season (minimum 900)`);
         continue;
       }
       const big = classifyBigFivePoolRow(j);
       if (!big.ok) {
         errors.push(
-          `${id}: liga «${big.display || "—"}» não é uma das 5 grandes (Premier League, La Liga, Serie A, Bundesliga, Ligue 1)`,
+          `${id}: league «${big.display || "—"}» is not one of the Big 5 (Premier League, La Liga, Serie A, Bundesliga, Ligue 1)`,
         );
         continue;
       }
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     if (eligible.length < 2) {
       return NextResponse.json(
         {
-          error: "Menos de 2 jogadores elegíveis. Verifica bucket, minutos, liga e época.",
+          error: "Fewer than 2 eligible players. Check bucket, minutes, league and season.",
           season_slug: seasonSlug,
           details: errors,
         },

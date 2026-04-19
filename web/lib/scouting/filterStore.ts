@@ -27,7 +27,7 @@ export interface FilterState {
   shortlist: Player[];
 
   // Active tab
-  activeTab: "overview" | "search" | "comparisons" | "scouting";
+  activeTab: "overview" | "search" | "comparisons" | "scouting" | "guide";
 
   // Player detail panel
   detailPlayer: Player | null;
@@ -55,7 +55,7 @@ export interface FilterState {
   clearComparison: () => void;
   addToShortlist: (p: Player) => void;
   removeFromShortlist: (name: string) => void;
-  setActiveTab: (v: "overview" | "search" | "comparisons" | "scouting") => void;
+  setActiveTab: (v: "overview" | "search" | "comparisons" | "scouting" | "guide") => void;
   openDetail: (p: Player) => void;
   closeDetail: () => void;
   setShowShortlist: (v: boolean) => void;

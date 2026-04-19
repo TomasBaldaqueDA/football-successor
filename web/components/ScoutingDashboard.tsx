@@ -20,12 +20,14 @@ import { PlayerDetailPanel } from "./scouting/PlayerDetailPanel";
 import { ClubDensityChart } from "./scouting/ClubDensityChart";
 import { HiddenGems } from "./scouting/HiddenGems";
 import { ShortlistDrawer } from "./scouting/ShortlistDrawer";
+import { MetricsGuide } from "./scouting/MetricsGuide";
 
 const TABS = [
   { id: "overview", label: "Overview" },
   { id: "search", label: "Player Search" },
   { id: "comparisons", label: "Comparisons" },
   { id: "scouting", label: "Scouting" },
+  { id: "guide", label: "Metrics Guide" },
 ] as const;
 
 export function ScoutingDashboard() {
@@ -145,6 +147,8 @@ export function ScoutingDashboard() {
               <HeatmapChart allPlayers={allPlayers} />
             </div>
           )}
+
+          {activeTab === "guide" && <MetricsGuide />}
 
           {activeTab === "scouting" && (
             <div className="flex flex-col gap-4">

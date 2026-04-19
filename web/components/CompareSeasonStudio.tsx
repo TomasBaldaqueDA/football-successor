@@ -154,17 +154,17 @@ export function CompareSeasonStudio() {
           Ranking por posição e métrica
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Última época em <code className="text-[11px]">mart.player_pool_clean_tbl</code>,{" "}
+          Last season in <code className="text-[11px]">mart.player_pool_clean_tbl</code>,{" "}
           <span className="font-medium text-zinc-700 dark:text-zinc-300">
-            Premier League, La Liga, Serie A, Bundesliga e Ligue 1
+            Premier League, La Liga, Serie A, Bundesliga and Ligue 1
           </span>
-          , mínimo de           minutos configurável. Por defeito só entram jogadores com o token certo em{" "}
-          <code className="text-[11px]">played_positions_short</code> (ex. AM, CAM), para não misturar com a expansão
-          L4L em <code className="text-[11px]">player_position_membership</code> (que chega a pôr centrais no AM).
-          Escolhe o <span className="font-medium">bucket</span> e uma <span className="font-medium">métrica</span>:
-          aparecem todos os jogadores elegíveis, com valor bruto da época,
-          valor ajustado por <code className="text-[11px]">league_strength_coefficient</code> (como no pipeline de perfil,
-          exceto colunas pct/rate) e um <span className="font-medium">score 0–1</span> por min–max no grupo (melhor =
+          , configurable minimum minutes. By default only players with the correct token in{" "}
+          <code className="text-[11px]">played_positions_short</code> (e.g. AM, CAM) are included, to avoid mixing with the L4L
+          expansion in <code className="text-[11px]">player_position_membership</code> (which can place centre-backs in AM).
+          Select a <span className="font-medium">bucket</span> and a <span className="font-medium">metric</span>:
+          all eligible players appear with the raw seasonal value,
+          value adjusted by <code className="text-[11px]">league_strength_coefficient</code> (as in the profile pipeline,
+          except pct/rate columns) and a <span className="font-medium">score 0–1</span> by min–max in the group (best =
           1).
         </p>
       </header>
@@ -176,10 +176,10 @@ export function CompareSeasonStudio() {
       ) : null}
 
       <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Configuração</h2>
+        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Configuration</h2>
         <div className="flex flex-wrap items-end gap-4">
           <label className="flex min-w-[12rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Posição (bucket)
+            Position (bucket)
             <select
               value={bucket}
               onChange={(e) => setBucket(e.target.value)}
@@ -194,7 +194,7 @@ export function CompareSeasonStudio() {
             </select>
           </label>
           <label className="flex min-w-[14rem] flex-[1.2] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Métrica
+            Metric
             <select
               value={metricColumn}
               onChange={(e) => setMetricColumn(e.target.value)}
@@ -203,13 +203,13 @@ export function CompareSeasonStudio() {
             >
               {metrics.map((m) => (
                 <option key={m.column} value={m.column}>
-                  {m.label} (peso {(m.weight * 100).toFixed(1)}%)
+                  {m.label} (weight {(m.weight * 100).toFixed(1)}%)
                 </option>
               ))}
             </select>
           </label>
           <label className="flex min-w-[10rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Versão pesos
+            Weight version
             <input
               type="text"
               value={weightVersion}
@@ -218,7 +218,7 @@ export function CompareSeasonStudio() {
             />
           </label>
           <label className="flex w-28 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Min. minutos
+            Min. minutes
             <input
               type="number"
               min={1}
@@ -236,7 +236,7 @@ export function CompareSeasonStudio() {
               className="rounded border-zinc-300"
             />
             <span>
-              Filtrar por tokens no dim (exclui expansão L4L)
+              Filter by dim tokens (excludes L4L expansion)
             </span>
           </label>
           <button
@@ -245,21 +245,21 @@ export function CompareSeasonStudio() {
             disabled={!bucket || !metricColumn || loadingRank}
             className="h-[42px] rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
           >
-            {loadingRank ? "A calcular…" : "Gerar ranking"}
+            {loadingRank ? "Calculating…" : "Generate ranking"}
           </button>
         </div>
         {loadingMetrics ? (
-          <p className="text-xs text-zinc-500">A carregar métricas do bucket…</p>
+          <p className="text-xs text-zinc-500">Loading bucket metrics…</p>
         ) : null}
       </section>
 
       {seasonSlug !== null && metricLabel !== null && count !== null ? (
         <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Época <span className="font-semibold text-zinc-900 dark:text-zinc-100">{seasonSlug}</span>
+          Season <span className="font-semibold text-zinc-900 dark:text-zinc-100">{seasonSlug}</span>
           {" · "}
           <span className="font-semibold text-zinc-900 dark:text-zinc-100">{metricLabel}</span>
           {" · "}
-          <span className="tabular-nums">{count}</span> jogadores
+          <span className="tabular-nums">{count}</span> players
         </p>
       ) : null}
 
@@ -270,8 +270,8 @@ export function CompareSeasonStudio() {
               <thead className="sticky top-0 z-10 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
                 <tr>
                   <th className="px-3 py-3">#</th>
-                  <th className="px-3 py-3">Jogador</th>
-                  <th className="px-3 py-3">Clube</th>
+                  <th className="px-3 py-3">Player</th>
+                  <th className="px-3 py-3">Club</th>
                   <th className="px-3 py-3">Liga</th>
                   <th className="px-3 py-3">Min</th>
                   <th className="px-3 py-3">Idade</th>
@@ -319,7 +319,7 @@ export function CompareSeasonStudio() {
 
       {!loadingRank && seasonSlug !== null && rows.length === 0 && count === 0 ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
-          Nenhum jogador com valor numérico para esta métrica no pool (ou dados em falta). Experimenta outra métrica.
+          No players with a numeric value for this metric in the pool (or missing data). Try another metric.
         </p>
       ) : null}
     </div>

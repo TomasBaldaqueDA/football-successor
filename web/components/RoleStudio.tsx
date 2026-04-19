@@ -8,6 +8,31 @@ import {
   saveRoleStudioSnapshot,
   type StoredRoleRow,
 } from "@/lib/roleStudioStorage";
+import {
+  StudioPage,
+  StudioInner,
+  StudioHeader,
+  Card,
+  SectionLabel,
+  ErrorBanner,
+  WarnBanner,
+  SearchInput,
+  SearchDropdown,
+  SelectedBadge,
+  FieldLabel,
+  Select,
+  Input,
+  Button,
+  DataTable,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+  MetricCard,
+  StatRow,
+  PlayerLink,
+} from "@/components/ui/studio";
 
 type PlayerHit = { player_id: string; player_name: string; last_club: string | null };
 
@@ -220,15 +245,15 @@ export function RoleStudio() {
     const minN = minAge.trim() === "" ? null : Number(minAge);
     const maxN = maxAge.trim() === "" ? null : Number(maxAge);
     if (minAge.trim() !== "" && !Number.isFinite(minN)) {
-      setError("Idade mínima inválida.");
+      setError("Invalid minimum age.");
       return;
     }
     if (maxAge.trim() !== "" && !Number.isFinite(maxN)) {
-      setError("Idade máxima inválida.");
+      setError("Invalid maximum age.");
       return;
     }
     if (minN !== null && maxN !== null && minN > maxN) {
-      setError("A idade mínima não pode ser maior que a máxima.");
+      setError("Minimum age cannot be greater than maximum.");
       return;
     }
 
@@ -264,309 +289,254 @@ export function RoleStudio() {
   }, [target, bucket, topN, weightVersion, minAge, maxAge]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-10">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Studio · Role</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Substitutos (mesmo papel/outcome)
-        </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Score do Role usa pesos por bucket em <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">mart.role_metric_weights</code>{" "}
-          e compara <span className="font-medium">role_score</span> do alvo vs candidatos. Colunas exibidas são as métricas de outcome mais relevantes para esse bucket.
-        </p>
-      </header>
+    <StudioPage>
+      <StudioInner>
+        {/* Header */}
+        <StudioHeader
+          section="Studio · Role"
+          title="Substitutes (same role/outcome)"
+          description="Role score uses bucket weights and compares the target's role_score against candidates."
+        />
 
-      {error ? (
-        <div
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
-          role="alert"
-        >
-          {error}
-        </div>
-      ) : null}
+        {/* Error banner */}
+        {error ? <ErrorBanner message={error} /> : null}
 
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">1. Jogador alvo</h2>
-        <div className="relative">
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Pesquisar por nome (mín. 2 caracteres)…"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            autoComplete="off"
-          />
-          {searching ? (
-            <span className="absolute right-3 top-2.5 text-xs text-zinc-400">A pesquisar…</span>
-          ) : null}
-          {hits.length > 0 ? (
-            <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-              {hits.map((p) => (
-                <li key={p.player_id}>
-                  <button
-                    type="button"
-                    className="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    onClick={() => void selectPlayer(p)}
-                  >
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">{p.player_name}</span>
-                    {p.last_club ? (
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">{p.last_club}</span>
-                    ) : null}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-        {target ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Selecionado:{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">{target.player_name}</span>
-            <span className="text-zinc-400"> · id </span>
-            <code className="text-xs text-zinc-500">{target.player_id}</code>
-          </p>
-        ) : null}
-      </section>
-
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">2. Papel (bucket)</h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Filtro de idade aplica-se aos <span className="font-medium">candidatos</span>, usando <code className="text-[11px]">age_last_season</code> em <code className="text-[11px]">player_dim</code>. Vazio = sem limite.
-          </p>
-        </div>
-        {!loadingBuckets && target && buckets.length > 0 ? (
-          <div className="rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
-            <div className="font-semibold text-zinc-600 dark:text-zinc-300">Buckets disponíveis do target</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {buckets.map((b) => (
-                <span
-                  key={b}
-                  className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 font-mono text-[11px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200"
-                >
-                  {b}
-                </span>
-              ))}
-            </div>
-            <div className="mt-2 text-zinc-500 dark:text-zinc-400">
-              O ranking só considera candidatos que tenham membership em <code className="text-[11px]">selected_bucket</code> (o bucket que escolheste acima).
-            </div>
+        {/* Step 1 — Jogador alvo */}
+        <Card>
+          <SectionLabel step={1}>Target player</SectionLabel>
+          <div className="relative">
+            <SearchInput
+              value={q}
+              onChange={setQ}
+              placeholder="Search by name (min. 2 chars)…"
+              loading={searching}
+            />
+            <SearchDropdown
+              hits={hits}
+              onSelect={(p) => void selectPlayer(p)}
+            />
           </div>
-        ) : null}
-        {loadingBuckets ? (
-          <p className="text-sm text-zinc-500">A carregar buckets…</p>
-        ) : target && buckets.length === 0 ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">
-            Este jogador não tem buckets em <code className="text-xs">player_position_membership</code>.
-          </p>
-        ) : (
-          <div className="flex flex-wrap items-end gap-4">
-            <label className="flex min-w-[12rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Bucket
-              <select
-                value={bucket}
-                onChange={(e) => setBucket(e.target.value)}
-                disabled={!target || buckets.length === 0}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              >
-                {buckets.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </label>
+          {target ? (
+            <div className="mt-3">
+              <SelectedBadge name={target.player_name} id={target.player_id} />
+            </div>
+          ) : null}
+        </Card>
 
-            <label className="flex w-24 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Top N
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={topN}
-                onChange={(e) => setTopN(Number(e.target.value))}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
+        {/* Step 2 — Papel (bucket) */}
+        <Card>
+          <SectionLabel step={2}>Role (bucket)</SectionLabel>
 
-            <label className="flex w-[4.5rem] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Idade mín
-              <input
-                type="number"
-                min={15}
-                max={45}
-                placeholder="—"
-                value={minAge}
-                onChange={(e) => setMinAge(e.target.value)}
-                disabled={!target || buckets.length === 0}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-
-            <label className="flex w-[4.5rem] flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Idade máx
-              <input
-                type="number"
-                min={15}
-                max={45}
-                placeholder="—"
-                value={maxAge}
-                onChange={(e) => setMaxAge(e.target.value)}
-                disabled={!target || buckets.length === 0}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-
-            <label className="flex min-w-[10rem] flex-1 flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              Versão pesos
-              <input
-                type="text"
-                value={weightVersion}
-                onChange={(e) => setWeightVersion(e.target.value)}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </label>
-
-            <button
-              type="button"
-              onClick={() => void runRole()}
-              disabled={!target || !bucket || loadingRole}
-              className="h-[42px] rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          {/* Pill tags for available buckets */}
+          {!loadingBuckets && target && buckets.length > 0 ? (
+            <div
+              className="mb-4 rounded-lg border px-4 py-3 text-xs"
+              style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.08)" }}
             >
-              {loadingRole ? "A calcular…" : "Calcular Role"}
-            </button>
-          </div>
-        )}
-      </section>
-
-      {!loadingRole && targetSummary && comparisonMetrics.length > 0 && rows.length === 0 ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
-          Nenhum candidato no ranking. Verifica membership no bucket, idade, ou regras da função `role_neighbors`. O resumo do alvo está em cima.
-        </p>
-      ) : null}
-
-      {targetSummary && comparisonMetrics.length > 0 ? (
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Alvo · resumo</h2>
-          <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-            <span>
-              <span className="text-zinc-500">Clube</span>{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {targetSummary.last_club ?? "—"}
-              </span>
-            </span>
-            <span>
-              <span className="text-zinc-500">Valor mercado (TM)</span>{" "}
-              <span className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                {fmtMarketValue(targetSummary.market_value_eur ?? null, targetSummary.market_value_text ?? null)}
-              </span>
-            </span>
-            <span>
-              <span className="text-zinc-500">Idade</span>{" "}
-              <span className="font-medium tabular-nums">{targetSummary.age_last_season ?? "—"}</span>
-            </span>
-            <span>
-              <span className="text-zinc-500">País</span>{" "}
-              <span className="font-medium">{targetSummary.nationality_code ?? "—"}</span>
-            </span>
-            <span>
-              <span className="text-zinc-500">Pos.</span>{" "}
-              <span className="font-medium">{targetSummary.position_text ?? "—"}</span>
-            </span>
-            <span>
-              <span className="text-zinc-500">Tokens</span>{" "}
-              <span className="max-w-md font-mono text-xs">
-                {targetSummary.played_positions_short ?? "—"}
-              </span>
-            </span>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {comparisonMetrics.map((m) => (
-              <div
-                key={m.column}
-                className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/50"
-              >
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  {m.label} <span className="font-normal text-zinc-400">({fmtWeight(m.weight)})</span>
-                </p>
-                <p className="mt-0.5 text-lg tabular-nums font-semibold text-zinc-900 dark:text-zinc-50">
-                  {fmtNum(m.target)}
-                </p>
+              <div className="mb-2 font-semibold" style={{ color: "#8B949E" }}>
+                Available target buckets
               </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {rows.length > 0 ? (
-        <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Resultados · Role</h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[60rem] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                <tr>
-                  <th className="px-3 py-3">#</th>
-                  <th className="px-3 py-3">Jogador</th>
-                  <th className="px-3 py-3">Clube</th>
-                  <th className="px-3 py-3">VM</th>
-                  <th className="px-3 py-3">Idade</th>
-                  <th className="px-3 py-3">País</th>
-                  <th className="px-3 py-3">Pos. tokens</th>
-                  <th className="px-3 py-3">Role dist (scaled)</th>
-                  <th className="px-3 py-3">Role score</th>
-                  {comparisonMetrics.map((m) => (
-                    <th key={m.column} className="min-w-[6.5rem] px-2 py-3 text-left normal-case">
-                      <div className="leading-tight">
-                        <span className="font-semibold text-zinc-700 dark:text-zinc-200">{m.label}</span>
-                        <div className="mt-1 text-[10px] font-normal normal-case text-zinc-400">
-                          alvo {fmtNum(m.target)}
-                        </div>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {rows.map((r) => (
-                  <tr key={String(r.player_id)} className="text-zinc-800 dark:text-zinc-200">
-                    <td className="px-3 py-2.5 tabular-nums text-zinc-500">{String(r.role_rank)}</td>
-                    <td className="px-3 py-2.5 font-medium">
-                      <Link
-                        href={`/studio/players/${encodeURIComponent(String(r.player_id))}`}
-                        onPointerDown={flushSnapshotToStorage}
-                        className="text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-600 dark:text-zinc-100 dark:decoration-zinc-600 dark:hover:decoration-zinc-400"
-                      >
-                        {r.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2.5 text-xs">{r.last_club ?? "—"}</td>
-                    <td className="max-w-[5rem] truncate px-3 py-2.5 text-xs tabular-nums">
-                      {fmtMarketValue(r.market_value_eur ?? null, r.market_value_text ?? null)}
-                    </td>
-                    <td className="px-3 py-2.5 tabular-nums text-xs">{r.age_last_season ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs">{r.nationality_code ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs">{r.played_positions_short ?? "—"}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-xs">{fmtNum(r.role_distance)}</td>
-                    <td className="px-3 py-2.5 tabular-nums text-xs">{fmtNum(r.role_score_final, 2)}</td>
-
-                    {comparisonMetrics.map((m) => (
-                      <td key={m.column} className="px-2 py-2.5 text-xs tabular-nums text-zinc-800 dark:text-zinc-200">
-                        {fmtNum(r.metric_vals?.[m.column])}
-                      </td>
-                    ))}
-                  </tr>
+              <div className="flex flex-wrap gap-2">
+                {buckets.map((b) => (
+                  <span
+                    key={b}
+                    className="rounded-full border px-2.5 py-0.5 font-mono text-[11px]"
+                    style={{
+                      background: "#00C9A710",
+                      borderColor: "#00C9A730",
+                      color: "#00C9A7",
+                    }}
+                  >
+                    {b}
+                  </span>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
-    </div>
+              </div>
+            </div>
+          ) : null}
+
+          {loadingBuckets ? (
+            <p className="text-sm" style={{ color: "#8B949E" }}>Loading buckets…</p>
+          ) : target && buckets.length === 0 ? (
+            <WarnBanner>
+              This player has no buckets in{" "}
+              <code className="text-xs">player_position_membership</code>.
+            </WarnBanner>
+          ) : (
+            <div className="flex flex-wrap items-end gap-4">
+              <FieldLabel label="Bucket">
+                <Select
+                  value={bucket}
+                  onChange={setBucket}
+                  disabled={!target || buckets.length === 0}
+                >
+                  {buckets.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </Select>
+              </FieldLabel>
+
+              <FieldLabel label="Top N">
+                <Input
+                  type="number"
+                  value={topN}
+                  onChange={(v) => setTopN(Number(v))}
+                  min={1}
+                  max={100}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Min age">
+                <Input
+                  type="number"
+                  value={minAge}
+                  onChange={setMinAge}
+                  placeholder="—"
+                  min={15}
+                  max={45}
+                  disabled={!target || buckets.length === 0}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Max age">
+                <Input
+                  type="number"
+                  value={maxAge}
+                  onChange={setMaxAge}
+                  placeholder="—"
+                  min={15}
+                  max={45}
+                  disabled={!target || buckets.length === 0}
+                />
+              </FieldLabel>
+
+              <FieldLabel label="Weight version">
+                <Input
+                  type="text"
+                  value={weightVersion}
+                  onChange={setWeightVersion}
+                />
+              </FieldLabel>
+
+              <Button
+                onClick={() => void runRole()}
+                disabled={!target || !bucket || loadingRole}
+                variant="primary"
+              >
+                {loadingRole ? "Calculating…" : "Calculate Role"}
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* Empty results warning */}
+        {!loadingRole && targetSummary && comparisonMetrics.length > 0 && rows.length === 0 ? (
+          <WarnBanner>
+            No candidates in ranking. Check bucket membership, age, or function rules for{" "}
+            <code className="text-xs">role_neighbors</code>. Target summary is above.
+          </WarnBanner>
+        ) : null}
+
+        {/* Target summary */}
+        {targetSummary && comparisonMetrics.length > 0 ? (
+          <Card>
+            <SectionLabel>Target · summary</SectionLabel>
+            <StatRow
+              items={[
+                { label: "Club", value: targetSummary.last_club ?? "—" },
+                {
+                  label: "Market value (TM)",
+                  value: fmtMarketValue(
+                    targetSummary.market_value_eur ?? null,
+                    targetSummary.market_value_text ?? null
+                  ),
+                },
+                { label: "Age", value: String(targetSummary.age_last_season ?? "—") },
+                { label: "Country", value: targetSummary.nationality_code ?? "—" },
+                { label: "Pos.", value: targetSummary.position_text ?? "—" },
+                { label: "Tokens", value: targetSummary.played_positions_short ?? "—" },
+              ]}
+            />
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {comparisonMetrics.map((m) => (
+                <MetricCard
+                  key={m.column}
+                  label={`${m.label} (${fmtWeight(m.weight)})`}
+                  value={fmtNum(m.target)}
+                />
+              ))}
+            </div>
+          </Card>
+        ) : null}
+
+        {/* Results table */}
+        {rows.length > 0 ? (
+          <Card noPad>
+            <div
+              className="border-b px-5 py-3"
+              style={{ borderColor: "rgba(255,255,255,0.08)" }}
+            >
+              <SectionLabel step={3}>Results · Role</SectionLabel>
+            </div>
+            <DataTable>
+              <THead>
+                <TH>#</TH>
+                <TH>Player</TH>
+                <TH>Club</TH>
+                <TH>MV</TH>
+                <TH>Age</TH>
+                <TH>Country</TH>
+                <TH className="min-w-[8rem]">Pos. tokens</TH>
+                <TH>Role dist</TH>
+                <TH>Role score</TH>
+                {comparisonMetrics.map((m) => (
+                  <TH key={m.column} className="min-w-[6.5rem] normal-case">
+                    <div className="leading-tight">
+                      <span style={{ color: "#E6EDF3" }} className="font-semibold">{m.label}</span>
+                      <div className="mt-1 text-[10px] font-normal normal-case" style={{ color: "#8B949E" }}>
+                        target {fmtNum(m.target)}
+                      </div>
+                    </div>
+                  </TH>
+                ))}
+              </THead>
+              <TBody>
+                {rows.map((r) => (
+                  <TR key={String(r.player_id)}>
+                    <TD className="tabular-nums text-xs" style={{ color: "#8B949E" }}>
+                      {String(r.role_rank)}
+                    </TD>
+                    <TD className="font-medium">
+                      <PlayerLink
+                        href={`/studio/players/${encodeURIComponent(String(r.player_id))}`}
+                        name={r.player_name}
+                        onPointerDown={flushSnapshotToStorage}
+                      />
+                    </TD>
+                    <TD className="max-w-[10rem] truncate text-xs">{r.last_club ?? "—"}</TD>
+                    <TD className="max-w-[5rem] truncate text-xs tabular-nums">
+                      {fmtMarketValue(r.market_value_eur ?? null, r.market_value_text ?? null)}
+                    </TD>
+                    <TD className="tabular-nums text-xs">{r.age_last_season ?? "—"}</TD>
+                    <TD className="text-xs">{r.nationality_code ?? "—"}</TD>
+                    <TD className="max-w-[10rem] truncate font-mono text-[10px]" style={{ color: "#8B949E" }}>
+                      {r.played_positions_short ?? "—"}
+                    </TD>
+                    <TD className="tabular-nums text-xs">{fmtNum(r.role_distance)}</TD>
+                    <TD className="tabular-nums text-xs">{fmtNum(r.role_score_final, 2)}</TD>
+                    {comparisonMetrics.map((m) => (
+                      <TD key={m.column} className="text-xs tabular-nums">
+                        {fmtNum(r.metric_vals?.[m.column])}
+                      </TD>
+                    ))}
+                  </TR>
+                ))}
+              </TBody>
+            </DataTable>
+          </Card>
+        ) : null}
+      </StudioInner>
+    </StudioPage>
   );
 }
-

@@ -5,71 +5,71 @@ const RADAR_AXES = [
     label: "Attack",
     color: "#FF7043",
     icon: "⚽",
-    description: "Capacidade de finalização e contribuição ofensiva direta.",
+    description: "Finishing ability and direct offensive contribution.",
     metrics: [
-      { name: "Goals / 90", column: "goals_p90_merged", weight: 100, note: "Golos marcados por 90 minutos. Único indicador — peso total no eixo." },
+      { name: "Goals / 90", column: "goals_p90_merged", weight: 100, note: "Goals scored per 90 minutes. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Goals/90 vs todos os jogadores de campo",
+    formula: "Percentile of Goals/90 vs all outfield players",
   },
   {
     label: "Chance Creation",
     color: "#FFAB40",
     icon: "🎯",
-    description: "Capacidade de criar oportunidades de golo para a equipa.",
+    description: "Ability to create goal-scoring opportunities for the team.",
     metrics: [
-      { name: "Key Passes / 90", column: "key_passes_p90_merged", weight: 100, note: "Passes que resultam diretamente numa oportunidade de golo. Único indicador — peso total no eixo." },
+      { name: "Key Passes / 90", column: "key_passes_p90_merged", weight: 100, note: "Passes that directly lead to a goal-scoring opportunity. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Key Passes/90 vs todos os jogadores de campo",
+    formula: "Percentile of Key Passes/90 vs all outfield players",
   },
   {
     label: "Passing Quality",
     color: "#C5E1A5",
     icon: "📐",
-    description: "Precisão e fiabilidade na circulação de bola.",
+    description: "Accuracy and reliability in ball circulation.",
     metrics: [
-      { name: "Pass Success %", column: "pass_success_pct_merged", weight: 100, note: "Percentagem de passes completados com sucesso. Único indicador — peso total no eixo." },
+      { name: "Pass Success %", column: "pass_success_pct_merged", weight: 100, note: "Percentage of passes successfully completed. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Pass Success% vs todos os jogadores de campo",
+    formula: "Percentile of Pass Success% vs all outfield players",
   },
   {
     label: "Defensive Work",
     color: "#A5D6A7",
     icon: "🛡️",
-    description: "Volume e eficácia do trabalho defensivo — pressão e recuperação de bola.",
+    description: "Volume and effectiveness of defensive work — pressing and ball recovery.",
     metrics: [
-      { name: "Tackles / 90", column: "tackles_p90_merged", weight: 100, note: "Número de desarmes bem-sucedidos por 90 minutos. Único indicador — peso total no eixo." },
+      { name: "Tackles / 90", column: "tackles_p90_merged", weight: 100, note: "Successful tackles per 90 minutes. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Tackles/90 vs todos os jogadores de campo",
+    formula: "Percentile of Tackles/90 vs all outfield players",
   },
   {
     label: "Ball Winning",
     color: "#4FC3F7",
     icon: "✂️",
-    description: "Capacidade de intercetar passes e cortar linhas de jogo do adversário.",
+    description: "Ability to intercept passes and cut off opposition passing lines.",
     metrics: [
-      { name: "Interceptions / 90", column: "interceptions_p90_merged", weight: 100, note: "Interceções realizadas por 90 minutos. Único indicador — peso total no eixo." },
+      { name: "Interceptions / 90", column: "interceptions_p90_merged", weight: 100, note: "Interceptions made per 90 minutes. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Interceptions/90 vs todos os jogadores de campo",
+    formula: "Percentile of Interceptions/90 vs all outfield players",
   },
   {
     label: "Physical Duels",
     color: "#81D4FA",
     icon: "💪",
-    description: "Domínio nos duelos aéreos — relevante para CB, FW e jogadores físicos.",
+    description: "Dominance in aerial duels — relevant for CBs, FWs and physical players.",
     metrics: [
-      { name: "Aerial Duels Won / 90", column: "aerial_won_p90_merged", weight: 100, note: "Disputas aéreas ganhas por 90 minutos. Único indicador — peso total no eixo." },
+      { name: "Aerial Duels Won / 90", column: "aerial_won_p90_merged", weight: 100, note: "Aerial duels won per 90 minutes. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Aerial Won/90 vs todos os jogadores de campo",
+    formula: "Percentile of Aerial Won/90 vs all outfield players",
   },
   {
     label: "Dribbling",
     color: "#FFD54F",
     icon: "🌀",
-    description: "Capacidade de superar adversários em 1v1 e progredir com bola.",
+    description: "Ability to beat opponents in 1v1 and progress with the ball.",
     metrics: [
-      { name: "Dribbles Won / 90", column: "dribbles_won_p90_merged", weight: 100, note: "Dribles bem-sucedidos por 90 minutos. Único indicador — peso total no eixo." },
+      { name: "Dribbles Won / 90", column: "dribbles_won_p90_merged", weight: 100, note: "Successful dribbles per 90 minutes. Single indicator — full weight on the axis." },
     ],
-    formula: "Percentil de Dribbles Won/90 vs todos os jogadores de campo",
+    formula: "Percentile of Dribbles Won/90 vs all outfield players",
   },
 ];
 
@@ -133,23 +133,23 @@ export function MetricsGuide() {
     <div className="flex flex-col gap-6 pb-8">
       {/* Header */}
       <div className="bg-[#161B22] border border-white/10 rounded-lg p-5">
-        <h2 className="text-base font-bold text-[#E6EDF3] mb-1">Guia de Métricas</h2>
+        <h2 className="text-base font-bold text-[#E6EDF3] mb-1">Metrics Guide</h2>
         <p className="text-sm text-[#8B949E] leading-relaxed max-w-3xl">
-          Todos os valores do radar e do score de Hidden Gems são baseados em{" "}
-          <span className="text-[#00C9A7] font-medium">percentis (0–100)</span> calculados
-          contra o universo completo de ~4.100 jogadores de campo das 12 principais ligas nas últimas 5
-          temporadas. Um valor de <span className="text-[#E6EDF3]">80</span> significa que o
-          jogador supera 80% de todos os jogadores de campo nessa métrica.
+          All radar values and Hidden Gems scores are based on{" "}
+          <span className="text-[#00C9A7] font-medium">percentiles (0–100)</span> calculated
+          against the full universe of ~4,100 outfield players from the top 12 leagues over the last 5
+          seasons. A value of <span className="text-[#E6EDF3]">80</span> means the player
+          outperforms 80% of all outfield players in that metric.
         </p>
         <div className="mt-3 flex gap-3 flex-wrap">
           <div className="bg-[#0D1117] rounded px-3 py-1.5 text-xs text-[#8B949E] border border-white/5">
-            <span className="text-[#00C9A7] font-semibold">Verde</span> ≥ 75º percentil
+            <span className="text-[#00C9A7] font-semibold">Green</span> ≥ 75th percentile
           </div>
           <div className="bg-[#0D1117] rounded px-3 py-1.5 text-xs text-[#8B949E] border border-white/5">
-            <span className="text-[#FFD54F] font-semibold">Amarelo</span> 50–74º percentil
+            <span className="text-[#FFD54F] font-semibold">Yellow</span> 50–74th percentile
           </div>
           <div className="bg-[#0D1117] rounded px-3 py-1.5 text-xs text-[#8B949E] border border-white/5">
-            <span className="text-[#FF6B6B] font-semibold">Vermelho</span> &lt; 50º percentil
+            <span className="text-[#FF6B6B] font-semibold">Red</span> &lt; 50th percentile
           </div>
           <div className="bg-[#0D1117] rounded px-3 py-1.5 text-xs text-[#8B949E] border border-white/5">
             Coluna de sufixo <code className="text-[#E6EDF3]">_pct_merged</code> = percentil (0–1) já calculado
@@ -160,7 +160,7 @@ export function MetricsGuide() {
       {/* Radar axes */}
       <section>
         <h3 className="text-sm font-semibold text-[#8B949E] uppercase tracking-widest mb-3">
-          Eixos do Radar de Comparação
+          Comparison Radar Axes
         </h3>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {RADAR_AXES.map((axis) => (
@@ -189,7 +189,7 @@ export function MetricsGuide() {
                     {axis.label}
                   </h4>
                   <span className="text-[10px] text-[#8B949E] bg-[#0D1117] px-1.5 py-0.5 rounded border border-white/5">
-                    100% peso único
+                    100% single weight
                   </span>
                 </div>
                 <p className="text-xs text-[#8B949E] mb-3 leading-relaxed">{axis.description}</p>
@@ -197,8 +197,8 @@ export function MetricsGuide() {
                 {/* Metrics table */}
                 <div className="bg-[#0D1117] rounded border border-white/5 overflow-hidden">
                   <div className="grid grid-cols-[1fr_auto] text-[10px] text-[#8B949E] px-2 py-1 border-b border-white/5">
-                    <span>Métrica fonte</span>
-                    <span className="text-right">Peso</span>
+                    <span>Source metric</span>
+                    <span className="text-right">Weight</span>
                   </div>
                   {axis.metrics.map((m) => (
                     <div
@@ -224,7 +224,7 @@ export function MetricsGuide() {
                 </div>
 
                 <p className="text-[10px] text-[#8B949E] mt-2 italic">
-                  Fórmula: {axis.formula}
+                  Formula: {axis.formula}
                 </p>
               </div>
             </div>
@@ -235,21 +235,21 @@ export function MetricsGuide() {
       {/* Hidden Gems score */}
       <section>
         <h3 className="text-sm font-semibold text-[#8B949E] uppercase tracking-widest mb-3">
-          Score Hidden Gems — Pesos por Posição
+          Hidden Gems Score — Weights by Position
         </h3>
         <div className="bg-[#161B22] border border-white/10 rounded-lg p-5">
           <p className="text-sm text-[#8B949E] mb-4 leading-relaxed">
-            O algoritmo de Hidden Gems pondera as métricas de forma diferente consoante a posição —
-            um CB não deve ser penalizado por não marcar golos, nem um avançado por ter poucas
-            interceções. Elegibilidade:{" "}
-            <span className="text-[#E6EDF3]">Idade ≤ 26 · Rating ≥ 6.5 · Clube fora do top 6</span> de cada liga.
+            The Hidden Gems algorithm weights metrics differently by position —
+            a CB should not be penalised for not scoring goals, nor a forward for having few
+            interceptions. Eligibility:{" "}
+            <span className="text-[#E6EDF3]">Age ≤ 26 · Rating ≥ 6.5 · Club outside the top 6</span> of each league.
           </p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left py-2 text-[#8B949E] font-medium">Métrica</th>
+                  <th className="text-left py-2 text-[#8B949E] font-medium">Metric</th>
                   {GEM_WEIGHTS.map((g) => (
                     <th
                       key={g.pos}
@@ -315,36 +315,36 @@ export function MetricsGuide() {
       {/* All raw columns */}
       <section>
         <h3 className="text-sm font-semibold text-[#8B949E] uppercase tracking-widest mb-3">
-          Glossário de Colunas
+          Column Glossary
         </h3>
         <div className="bg-[#161B22] border border-white/10 rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/10 bg-[#0D1117]">
-                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Coluna</th>
-                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Tipo</th>
-                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Descrição</th>
+                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Column</th>
+                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Type</th>
+                <th className="text-left px-4 py-2.5 text-[#8B949E] font-medium">Description</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["goals_p90_merged", "Por 90 min", "Golos marcados por 90 minutos"],
-                ["assists_p90_merged", "Por 90 min", "Assistências por 90 minutos"],
-                ["xg_per_90_merged", "Por 90 min", "Expected Goals por 90 minutos"],
-                ["shots_p90_merged", "Por 90 min", "Remates por 90 minutos"],
-                ["key_passes_p90_merged", "Por 90 min", "Passes-chave (que criam oportunidades) por 90 min"],
-                ["passes_p90_merged", "Por 90 min", "Total de passes por 90 minutos"],
-                ["accurate_crosses_p90_merged", "Por 90 min", "Cruzamentos precisos por 90 minutos"],
-                ["interceptions_p90_merged", "Por 90 min", "Interceções por 90 minutos"],
-                ["tackles_p90_merged", "Por 90 min", "Desarmes por 90 minutos"],
-                ["blocks_p90_merged", "Por 90 min", "Blocos (remates/passes bloqueados) por 90 min"],
-                ["dribbles_won_p90_merged", "Por 90 min", "Dribles bem-sucedidos por 90 minutos"],
-                ["aerial_won_p90_merged", "Por 90 min", "Duelos aéreos ganhos por 90 minutos"],
-                ["pass_success_pct_merged", "Percentagem", "Taxa de sucesso nos passes (%)"],
-                ["dispossessed_p90_merged", "Por 90 min", "Vezes que perdeu a bola por pressão adversária por 90 min"],
-                ["turnovers_p90_merged", "Por 90 min", "Perdas de bola totais por 90 minutos"],
-                ["*_pct_merged", "Percentil (0–1)", "Versão percentil da métrica vs universo completo de jogadores"],
-                ["rating_merged", "Score (0–10)", "Rating composto global do jogador (média ponderada multi-métrica)"],
+                ["goals_p90_merged", "Per 90 min", "Goals scored per 90 minutes"],
+                ["assists_p90_merged", "Per 90 min", "Assists per 90 minutes"],
+                ["xg_per_90_merged", "Per 90 min", "Expected Goals per 90 minutes"],
+                ["shots_p90_merged", "Per 90 min", "Shots per 90 minutes"],
+                ["key_passes_p90_merged", "Per 90 min", "Key passes (that create chances) per 90 min"],
+                ["passes_p90_merged", "Per 90 min", "Total passes per 90 minutes"],
+                ["accurate_crosses_p90_merged", "Per 90 min", "Accurate crosses per 90 minutes"],
+                ["interceptions_p90_merged", "Per 90 min", "Interceptions per 90 minutes"],
+                ["tackles_p90_merged", "Per 90 min", "Tackles per 90 minutes"],
+                ["blocks_p90_merged", "Per 90 min", "Blocks (shots/passes blocked) per 90 min"],
+                ["dribbles_won_p90_merged", "Per 90 min", "Successful dribbles per 90 minutes"],
+                ["aerial_won_p90_merged", "Per 90 min", "Aerial duels won per 90 minutes"],
+                ["pass_success_pct_merged", "Percentage", "Pass success rate (%)"],
+                ["dispossessed_p90_merged", "Per 90 min", "Times dispossessed under opposition pressure per 90 min"],
+                ["turnovers_p90_merged", "Per 90 min", "Total ball losses per 90 minutes"],
+                ["*_pct_merged", "Percentile (0–1)", "Percentile version of the metric vs full player universe"],
+                ["rating_merged", "Score (0–10)", "Global composite rating (multi-metric weighted average)"],
               ].map(([col, type, desc]) => (
                 <tr key={col} className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-2">

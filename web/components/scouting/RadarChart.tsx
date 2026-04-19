@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import type { Player } from "@/lib/scouting/types";
-import { POSITION_COLORS } from "@/lib/scouting/types";
 import { useFilterStore } from "@/lib/scouting/filterStore";
 
 const AXES = [
@@ -19,6 +18,113 @@ const AXES = [
 type AxisKey = (typeof AXES)[number]["key"];
 
 const RADAR_COLORS = ["#00C9A7", "#FFD54F", "#FF7043"];
+
+const POSITION_LABELS: Record<string, string> = {
+  CB: "centre-back",
+  FB: "full-back",
+  DM: "defensive midfielder",
+  CM: "central midfielder",
+  Winger: "winger",
+  AM: "attacking midfielder",
+  FW: "forward",
+};
+
+function getTopAxes(player: Player, n: number): string[] {
+  return [...AXES]
+    .sort((a, b) => (player[b.key as AxisKey] as number) - (player[a.key as AxisKey] as number))
+    .slice(0, n)
+    .map((a) => a.label.toLowerCase());
+}
+
+function generateInsights(
+  players: Player[]
+): { text: string; highlight: { name: string; color: string }[] }[] {
+  if (players.length < 2) return [];
+
+  const name = (p: Player, i: number) => ({ name: p.name, color: RADAR_COLORS[i] });
+
+  if (players.length === 2) {
+    const [p1, p2] = players;
+    const top1 = getTopAxes(p1, 2);
+    const top2 = getTopAxes(p2, 2);
+    const pos1 = POSITION_LABELS[p1.positionGroup] ?? "player";
+    const pos2 = POSITION_LABELS[p2.positionGroup] ?? "player";
+    const samePos = p1.positionGroup === p2.positionGroup;
+
+    const intro = samePos
+      ? `This radar compares two ${pos1}s with different profiles`
+      : `This radar compares a ${pos1} and a ${pos2}`;
+
+    const gaps = AXES.map((a) => ({
+      label: a.label,
+      diff: ((p1[a.key as AxisKey] as number) - (p2[a.key as AxisKey] as number)) * 100,
+    }));
+    const biggestGap = gaps.reduce((max, g) =>
+      Math.abs(g.diff) > Math.abs(max.diff) ? g : max
+    );
+    const leader = biggestGap.diff > 0 ? { p: p1, i: 0 } : { p: p2, i: 1 };
+
+    return [
+      {
+        text: `${intro}: while {0} excels in ${top1[0]} and ${top1[1]}, {1} shows stronger ${top2[0]} and ${top2[1]}.`,
+        highlight: [name(p1, 0), name(p2, 1)],
+      },
+      {
+        text: `The most notable gap is in ${biggestGap.label.toLowerCase()}, where {0} holds a clear advantage.`,
+        highlight: [name(leader.p, leader.i)],
+      },
+    ];
+  }
+
+  // 3 players
+  const [p1, p2, p3] = players;
+  const top1 = getTopAxes(p1, 2);
+  const top2 = getTopAxes(p2, 2);
+  const top3 = getTopAxes(p3, 2);
+
+  const best = [p1, p2, p3].reduce((max, p) =>
+    p.rating_merged > max.rating_merged ? p : max
+  );
+  const bestIdx = [p1, p2, p3].indexOf(best);
+
+  return [
+    {
+      text: `{0} profiles strongest in ${top1[0]} and ${top1[1]}, {1} in ${top2[0]} and ${top2[1]}, and {2} in ${top3[0]} and ${top3[1]}.`,
+      highlight: [name(p1, 0), name(p2, 1), name(p3, 2)],
+    },
+    {
+      text: `Among the three, {0} carries the highest overall rating (${best.rating_merged.toFixed(2)}), suggesting the strongest well-rounded profile.`,
+      highlight: [name(best, bestIdx)],
+    },
+  ];
+}
+
+function InsightText({
+  text,
+  highlight,
+}: {
+  text: string;
+  highlight: { name: string; color: string }[];
+}) {
+  const parts = text.split(/(\{\d+\})/g);
+  return (
+    <span>
+      {parts.map((part, i) => {
+        const match = part.match(/^\{(\d+)\}$/);
+        if (match) {
+          const idx = parseInt(match[1]);
+          const h = highlight[idx];
+          return (
+            <span key={i} style={{ color: h.color }} className="font-semibold">
+              {h.name}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+}
 
 interface RadarChartProps {
   allPlayers: Player[];
@@ -160,7 +266,18 @@ export function RadarChart({ allPlayers }: RadarChartProps) {
           Search and add players above to compare
         </div>
       ) : (
-        <ReactECharts option={option} style={{ height: 340 }} />
+        <>
+          <ReactECharts option={option} style={{ height: 340 }} />
+          {generateInsights(comparisonPlayers).length > 0 && (
+            <div className="flex flex-col gap-1.5 px-1">
+              {generateInsights(comparisonPlayers).map((insight, i) => (
+                <p key={i} className="text-[11px] text-[#8B949E] leading-relaxed">
+                  <InsightText text={insight.text} highlight={insight.highlight} />
+                </p>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Mini comparison table */}
