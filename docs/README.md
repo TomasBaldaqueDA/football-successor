@@ -8,3 +8,5 @@
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Conventions for contributors |
 
 Screenshots for the root README live under [`screenshots/`](screenshots/).
+
+ETL scripts index: [`../pipelines/README.md`](../pipelines/README.md).

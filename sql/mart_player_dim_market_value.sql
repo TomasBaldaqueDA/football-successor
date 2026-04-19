@@ -1,5 +1,5 @@
 ﻿-- Market value (Transfermarkt) em mart.player_dim
--- 1) Tabela de referÃªncia (preenchida via CSV â€” ver load_transfermarkt_market_to_supabase.py)
+-- 1) Tabela de referÃªncia (preenchida via CSV â€” ver pipelines/transfermarkt/load_transfermarkt_market_to_supabase.py)
 -- 2) Match: nome + clube (normalizado + similaridade de clube com pg_trgm)
 -- 3) Colunas novas em mart.player_dim
 --

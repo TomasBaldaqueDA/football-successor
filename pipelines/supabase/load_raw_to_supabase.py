@@ -9,8 +9,9 @@ from typing import Iterator, Tuple
 import psycopg
 
 
-ROOT = Path(__file__).resolve().parent
-RAW_DIR = ROOT / "data_raw"
+# Repo root (…/pipelines/supabase/this_file.py)
+REPO_ROOT = Path(__file__).resolve().parents[2]
+RAW_DIR = REPO_ROOT / "data_raw"
 
 
 def iter_raw_json_files(base_dir: Path) -> Iterator[Tuple[Path, str, str, str, str]]:
@@ -83,7 +84,7 @@ def main() -> None:
                         season_slug,
                         entity_type,
                         source_file,
-                        str(file_path.relative_to(ROOT)).replace("\\", "/"),
+                        str(file_path.relative_to(REPO_ROOT)).replace("\\", "/"),
                         json.dumps(payload, ensure_ascii=False),
                     ),
                 )

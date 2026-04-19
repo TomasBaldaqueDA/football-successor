@@ -18,11 +18,11 @@ If you fork the repo for a portfolio-only clone, consider documenting which subs
 
 | Location | Typical use |
 |----------|-------------|
-| Repo **root** `*.py` | Scraping Transfermarkt, loading raw or market refs to Supabase (`scrape_transfermarkt_market_values.py`, `load_raw_to_supabase.py`, `load_transfermarkt_market_to_supabase.py`, …) |
+| **`pipelines/`** | **ETL-style** jobs: Transfermarkt scrape/load/repair (`pipelines/transfermarkt/`), raw JSON → Supabase `raw.raw_files` (`pipelines/supabase/`). See [`pipelines/README.md`](../pipelines/README.md). |
 | `scripts/` | Standalone utilities (e.g. `powerbi_radar_chart.py`) |
 | `artifacts/` | `import_data.py`, `build_dashboard.py` — closer to **Excel / dashboard** generation pipelines |
 
-These scripts assume **credentials and paths** on the machine that runs them (not shipped in git).
+These scripts assume **credentials and paths** on the machine that runs them (not shipped in git). Run them from the **repo root** so `data_raw/` resolves correctly.
 
 ---
 

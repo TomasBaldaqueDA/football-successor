@@ -10,7 +10,7 @@ This document is for anyone who opens the repo and wants a **map of the system**
 data_raw/          JSON (leagues / seasons / players)
        │
        ▼
-Python (root + scripts/ + artifacts/)   scraping, cleaning, loads to Postgres
+Python (pipelines/ + scripts/ + artifacts/)   scraping, cleaning, loads to Postgres
        │
        ▼
 PostgreSQL mart.*   dimensions, pools, merged profiles, memberships, SQL functions

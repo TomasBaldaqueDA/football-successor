@@ -13,6 +13,9 @@ from pathlib import Path
 
 import psycopg
 
+# Repo root (…/pipelines/transfermarkt/this_file.py)
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 def parse_opt_int(s: str | None) -> int | None:
     if s is None or str(s).strip() == "":
@@ -37,7 +40,7 @@ def main() -> None:
     parser.add_argument(
         "--csv",
         type=Path,
-        default=Path(__file__).resolve().parent / "data_raw" / "transfermarkt_12leagues_full_2025.csv",
+        default=_REPO_ROOT / "data_raw" / "transfermarkt_12leagues_full_2025.csv",
         help="CSV com colunas do scrape (inclui player_id = TM id)",
     )
     parser.add_argument(

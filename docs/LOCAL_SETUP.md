@@ -68,4 +68,4 @@ If the app boots but data is empty, confirm with a SQL client that `mart.player_
 
 ## Python pipelines (optional)
 
-Root-level and `artifacts/` scripts need their **own** env (e.g. Supabase service URL, file paths). They are **not** started by `npm run dev` — run them explicitly with `python …` when ingesting or regenerating data.
+Scripts under **`pipelines/`** (see [`pipelines/README.md`](../pipelines/README.md)) and in **`artifacts/`** need their **own** env (e.g. Supabase URL, file paths). They are **not** started by `npm run dev` — run from the **repo root**, e.g. `python pipelines/supabase/load_raw_to_supabase.py`.

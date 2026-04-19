@@ -29,7 +29,7 @@ This project implements a **complete pipeline**:
 | Stage | What happens here |
 |--------|-------------------|
 | **Ingestion** | Raw competition data as **JSON** under `data_raw/` (multi-league / multi-season). |
-| **Processing** | **Python** at repo root (scrapers, loaders), `scripts/`, and `artifacts/` for ETL-style jobs and exports. |
+| **Processing** | **Python** in **`pipelines/`** (Transfermarkt + Supabase loads), **`scripts/`**, and **`artifacts/`** for ETL-style jobs and exports. |
 | **Modelling** | **PostgreSQL** analytical layer in a **`mart.*`** schema (dimensions, season pools, merged profiles, memberships, SQL functions). |
 | **Serving** | **Next.js API routes** (`web/app/api/*`) exposing queries to the pool — typed handlers, validation, no “magic” in the UI only. |
 | **Consumption** | **React dashboards** (“studios”) for L4L, role, development paths, budget fit, upgrades, top metrics, control score, team ranking, **Big 5 season ranking**, scouting, and player detail pages. |
@@ -111,7 +111,8 @@ Structured layer in PostgreSQL, including (non-exhaustive):
 Football_Successor_2026/
 ├── web/                 # Next.js app (UI + API routes)
 ├── sql/                 # Mart definitions, weights, SQL functions
-├── scripts/             # Python — cleaning, transforms, automation
+├── pipelines/           # Python ETL: Transfermarkt + raw→Supabase (see pipelines/README.md)
+├── scripts/             # Python utilities (e.g. Power BI helpers)
 ├── data_raw/            # Raw scraped / competition JSON (large)
 ├── artifacts/           # Generated outputs (e.g. dashboards) when present
 └── docs/screenshots/    # README visuals

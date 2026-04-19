@@ -36,4 +36,5 @@ Small set of rules so the repo stays easy to review (for you or for collaborator
 ## Data
 
 - Avoid committing **multi‑GB** dumps unless the team agrees; document large assets in `docs/DATA.md` instead.
+- New **ingestion / load** scripts belong under **`pipelines/<vendor-or-stage>/`** (see `pipelines/README.md`); keep paths relative to **repo root** (`REPO_ROOT = Path(__file__).resolve().parents[2]` when the file is two levels deep).
 - If you add new screenshot assets for the README, place them under **`docs/screenshots/`** and reference from the root `README.md`.
