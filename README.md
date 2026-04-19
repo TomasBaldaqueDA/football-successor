@@ -1,130 +1,188 @@
 # Football Successor
 
-**Internal analytics & scouting studio for football data** — Next.js app, PostgreSQL marts (`mart.*`), and supporting SQL / Python tooling.
+⚽ **End-to-end football data platform for scouting and player analysis**  
+A full-stack project combining **data engineering**, **analytics**, and **interactive product** to support how a club would actually work with performance and recruitment data — from raw inputs to decisions in the UI.
 
-> PT: Ferramenta para explorar perfis de jogadores, substitutos “like-for-like”, rankings por liga/métrica e conteúdo de scouting, sobre dados agregados na base de dados.
+---
+
+## Overview
+
+**Football Successor** is an internal **analytics & scouting studio**: explore player performance, run **like-for-like** and role-based replacement workflows, compare across **leagues and seasons**, and ship those ideas as **usable tools** (not only notebooks).
+
+It is deliberately close to a **real football data office setup**: messy inputs, curated marts, SQL logic for similarity and neighbours, and a front-end that operationalises the analysis for repeated use.
+
+---
+
+## End-to-end data pipeline
+
+This project implements a **complete pipeline**:
+
+| Stage | What happens here |
+|--------|-------------------|
+| **Ingestion** | Raw competition data as **JSON** under `data_raw/` (multi-league / multi-season). |
+| **Processing** | **Python** scripts in `scripts/` (and related tooling) for cleaning, transforms, and automation. |
+| **Modelling** | **PostgreSQL** analytical layer in a **`mart.*`** schema (dimensions, season pools, merged profiles, memberships, SQL functions). |
+| **Serving** | **Next.js API routes** (`web/app/api/*`) exposing queries to the pool — typed handlers, validation, no “magic” in the UI only. |
+| **Consumption** | **React dashboards** (“studios”) for L4L, role, development paths, budget fit, upgrades, top metrics, control score, team ranking, **Big 5 season ranking**, scouting, and player detail pages. |
+
+That sequence mirrors how clubs often separate **engineering** (pipelines + marts) from **analytics product** (tools recruiters and analysts live in).
+
+---
+
+## Data pipeline architecture
+
+```
+Raw data (JSON / scraped inputs)
+        ↓
+Python (cleaning, transforms, automation)
+        ↓
+PostgreSQL (mart.* tables & SQL functions)
+        ↓
+API routes (Next.js server / Node)
+        ↓
+Frontend (dashboards, scouting, comparisons)
+```
+
+---
+
+## Key features
+
+- **End-to-end ownership** — from raw `data_raw/` inputs through marts to **production-style** UI and APIs.  
+- **Analytical marts** — curated tables for scalable player views instead of querying raw chaos ad hoc.  
+- **Player comparison & replacement logic** — like-for-like and role workflows powered by **`mart.l4l_metric_weights`**, **`mart.player_position_membership`**, and SQL neighbour / replacement functions under `sql/`.  
+- **Interactive dashboards** — multiple studios for different decision questions (fit, budget, upside, team context, etc.).  
+- **Cross-league comparability** — e.g. **Big 5** filters, **league strength** coefficients on season metrics, and **cohort normalisation (0–1)** where implemented for transparent ranking.  
+- **Single stack** — data engineering, analytics modelling, and **product surface** in one repo a Data Office can actually clone and run.
+
+---
 
 ## Screenshots
 
-Visão geral da app, pesquisa de jogadores, fluxos de comparação / studios e módulo de scouting.
-
-| Overview — entrada e navegação nos studios | Player search — pesquisa e seleção |
+| Overview — navigation & studios | Player search |
 |:---:|:---:|
 | ![Overview — Football Successor](docs/screenshots/Overview.png) | ![Player search](docs/screenshots/Player_search.png) |
 
-| Comparisons — studios / métricas | Scouting — exploração e gráficos |
+| Comparisons / studios | Scouting module |
 |:---:|:---:|
 | ![Comparisons](docs/screenshots/Comparisons.png) | ![Scouting](docs/screenshots/Scouting.png) |
 
 ---
 
-## Why this repo exists
+## Technical stack
 
-This project bundles:
-
-- A **Next.js 16** web app with multiple **studios** (L4L, Role, Development, Budget, Upgrade, Top Stats, Control Score, Team Ranking, Big‑5 season leaderboard, Scouting, etc.).
-- **Server routes** that query **PostgreSQL** (e.g. Supabase pooler) against curated tables such as `mart.player_dim`, `mart.player_pool_clean_tbl`, `mart.player_profile_merged_v1`, `mart.player_position_membership`, and SQL functions for replacements / neighbours.
-- **`sql/`** — mart definitions and diagnostics you can run in the SQL editor.
-- **`scripts/`** — Python utilities (e.g. exports, charts).
-- **`data_raw/`** — raw league / season JSON (large; cloned with the repo).
-
-It is suitable to **link from a CV**: reviewers can browse code, structure, commit history, and the **screenshots** at the top of this README.
-
----
-
-## Tech stack
-
-| Area | Stack |
-|------|--------|
-| Web | Next.js (App Router), React 19, TypeScript, Tailwind CSS 4 |
-| Data | `pg` (connection pool), JSON metrics from marts |
-| Viz | ECharts (where used), PapaParse (CSV scouting) |
-| Other | Python scripts, Power BI–adjacent exports where applicable |
+| Area | Technologies |
+|------|----------------|
+| **Web** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 |
+| **Data** | PostgreSQL, analytical **`mart.*`** schema, `pg` connection pooling |
+| **Backend** | Next.js **Route Handlers** (Node), JSON metrics from merged / pool tables |
+| **Processing** | Python (ETL-style scripts, automation, exports) |
+| **Visualisation** | ECharts (where used), custom dashboards, **PapaParse** for CSV scouting flows |
+| **Other** | SQL editor–ready mart definitions; artefacts / exports under `artifacts/` when generated |
 
 ---
 
-## Repository layout
+## Data & modelling
+
+Structured layer in PostgreSQL, including (non-exhaustive):
+
+| Object | Role |
+|--------|------|
+| **`mart.player_dim`** | Player attributes, club, age, market value, position text / tokens. |
+| **`mart.player_pool_clean_tbl`** | Season-level **pool** rows (minutes, league, coefficients, wide stats). |
+| **`mart.player_profile_merged_v1`** | **Merged** multi-season profile (`*_merged` / p90 / pct columns) for stable comparisons. |
+| **`mart.player_position_membership`** | **Bucket** membership for tactical roles (with documented cross-bucket expansion for some L4L flows). |
+
+**SQL in `sql/`** defines marts, weights, and **database functions** for neighbours, replacements, and similar patterns — so the “model” is inspectable, not hidden in app-only logic.
+
+---
+
+## Repository structure
 
 ```
 Football_Successor_2026/
-├── web/                 # Next.js application (npm project)
-│   ├── app/             # Routes & API route handlers
-│   ├── components/      # Studio UI components
-│   └── lib/             # DB pool, metric helpers, scouting logic
-├── sql/                 # Mart SQL & maintenance scripts
-├── scripts/             # Python & automation
-├── data_raw/            # Raw competition JSON (large)
-├── artifacts/           # Generated dashboards / exports (when present)
-└── docs/screenshots/    # Put CV / README screenshots here
+├── web/                 # Next.js app (UI + API routes)
+├── sql/                 # Mart definitions, weights, SQL functions
+├── scripts/             # Python — cleaning, transforms, automation
+├── data_raw/            # Raw scraped / competition JSON (large)
+├── artifacts/           # Generated outputs (e.g. dashboards) when present
+└── docs/screenshots/    # README visuals
 ```
 
 ---
 
-## Quick start (local)
+## Example use cases
 
-### 1. Prerequisites
+- **Like-for-like replacements** — weighted metric space, candidate ranking, explainable columns.  
+- **Performance across leagues** — pool season rows, league filters, strength-adjusted views where applicable.  
+- **Role-specific comparison** — bucket-driven metrics and membership rules.  
+- **Scouting workflows** — CSV-driven exploration with filters and charts where implemented.  
+- **Team / league context** — ranking and control-style views depending on mart availability.
 
-- Node.js **20+** (LTS recommended)
-- A **PostgreSQL** connection string with access to your `mart.*` objects (e.g. Supabase).
+---
 
-### 2. Environment
+## Running locally
+
+### Requirements
+
+- **Node.js 20+** (LTS)  
+- **PostgreSQL** reachable from your machine (e.g. Supabase pooler)
+
+### Setup
 
 ```bash
 cd web
 cp .env.example .env.local
 ```
 
-Edit **`.env.local`** and set either:
+Edit **`.env.local`** and set **either**:
 
-- `DATABASE_URL=...` **or**
+- `DATABASE_URL=...` **or**  
 - `SUPABASE_DB_URL=...`
 
-(use the pooler URI your provider gives you; the app enables TLS for managed Postgres).
+(never commit `.env.local` — it stays gitignored).
 
-**Never commit `.env.local`** — it is gitignored.
-
-### 3. Install & run
+### Run
 
 ```bash
-cd web
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). From the home page you can open each studio route under `/studio/...`.
+Open [http://localhost:3000](http://localhost:3000).
 
-### 4. Lint (optional)
+### Lint (optional)
 
 ```bash
-cd web
 npm run lint
 ```
 
 ---
 
-## Highlights (for recruiters)
+## Deployment
 
-- **Like-for-like & role workflows** — search players, buckets from `mart.player_position_membership`, weighted metrics from `mart.l4l_metric_weights`, neighbour SQL functions.
-- **Big 5 season leaderboard** — latest season from `mart.player_pool_clean_tbl`, minimum minutes, top five leagues (incl. TM-style codes), optional **strict dim token** filter so expanded L4L membership does not mix positions (e.g. CB into AM).
-- **League strength** — season metrics can be scaled with `league_strength_coefficient` and normalised to a **0–1** cohort score for transparent ranking.
-- **Scouting module** — CSV-driven exploration with filters and charts where implemented.
-- **SQL transparency** — mart definitions live in `sql/` for reproducible analytics engineering.
+Deployable on **Vercel**, **Railway**, or any **Node** host that supports Next.js. Configure the same database env vars in the host dashboard; watch **connection limits** on pooled Postgres for serverless plans.
 
 ---
 
-## Deployment (optional)
+## Notes on data
 
-The app is a standard Next.js project: you can deploy to **Vercel**, **Railway**, or any Node host. Set the same env vars in the host’s dashboard. For serverless, ensure the DB pooler allows enough connections for your plan.
-
----
-
-## License & data
-
-- Code in this repository is provided **as-is** for portfolio / internal use unless you add a formal `LICENSE` file.
-- **Player and competition data** may be subject to third-party terms from your data provider — do not assume redistribution rights beyond what your contract allows.
+- Raw and derived data may be subject to **third-party terms** from your sources — this repo is aimed at **portfolio / demonstration** use unless you add explicit licensing.  
+- Large paths under `data_raw/` are intentional for a **realistic** ETL story; clone size reflects that.
 
 ---
 
 ## Author
 
-Maintained by **[TomasBaldaqueDA](https://github.com/TomasBaldaqueDA)** — repository: [`football-successor`](https://github.com/TomasBaldaqueDA/football-successor).
+**Tomás Baldaque** — [GitHub @TomasBaldaqueDA](https://github.com/TomasBaldaqueDA) · [`football-successor`](https://github.com/TomasBaldaqueDA/football-successor)
+
+---
+
+## O que isto comunica (PT)
+
+- **Produto**, não só um script: há UI, rotas, e decisões de produto em torno de scouting e recrutamento.  
+- **Pipeline completo**: ingestão → transformação → mart → API → dashboards.  
+- **Contexto de clube**: métricas, posições, ligas, substituições — linguagem que um **Data Office** reconhece logo.
+
+### Impacto para quem abre o repo
+
+Quem for de dados no futebol vê de imediato: **engenharia de dados**, **analytics**, e **contexto desportivo** — no mesmo sítio.
