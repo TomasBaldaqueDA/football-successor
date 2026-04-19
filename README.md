@@ -11,6 +11,15 @@ A full-stack project combining **data engineering**, **analytics**, and **intera
 
 It is deliberately close to a **real football data office setup**: messy inputs, curated marts, SQL logic for similarity and neighbours, and a front-end that operationalises the analysis for repeated use.
 
+### Documentation (deep dive)
+
+| Doc | Purpose |
+|-----|---------|
+| [Architecture](docs/ARCHITECTURE.md) | How data, SQL marts, APIs, and UI fit together |
+| [Data layout](docs/DATA.md) | Raw inputs, Python loaders, `mart.*` objects |
+| [Local setup](docs/LOCAL_SETUP.md) | Environment, Postgres, run & troubleshoot |
+| [Contributing](docs/CONTRIBUTING.md) | How to change the repo safely |
+
 ---
 
 ## End-to-end data pipeline
@@ -20,7 +29,7 @@ This project implements a **complete pipeline**:
 | Stage | What happens here |
 |--------|-------------------|
 | **Ingestion** | Raw competition data as **JSON** under `data_raw/` (multi-league / multi-season). |
-| **Processing** | **Python** scripts in `scripts/` (and related tooling) for cleaning, transforms, and automation. |
+| **Processing** | **Python** at repo root (scrapers, loaders), `scripts/`, and `artifacts/` for ETL-style jobs and exports. |
 | **Modelling** | **PostgreSQL** analytical layer in a **`mart.*`** schema (dimensions, season pools, merged profiles, memberships, SQL functions). |
 | **Serving** | **Next.js API routes** (`web/app/api/*`) exposing queries to the pool — typed handlers, validation, no “magic” in the UI only. |
 | **Consumption** | **React dashboards** (“studios”) for L4L, role, development paths, budget fit, upgrades, top metrics, control score, team ranking, **Big 5 season ranking**, scouting, and player detail pages. |

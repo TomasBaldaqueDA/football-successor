@@ -1,5 +1,7 @@
 # Screenshots (README)
 
+Índice geral da documentação: [../README.md](../README.md).
+
 Ficheiros usados no `README.md` da raiz:
 
 | Ficheiro | Uso |
